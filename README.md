@@ -1,2 +1,3 @@
-# lucky-number-game
-A mobile-friendly lucky number game with Firebase integration
+git add .
+git commit -m "Force rebuild"
+git push origin main
