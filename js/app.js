@@ -5,7 +5,12 @@ import {
   signOut,
   onAuthStateChanged,
   collection,
-  addDoc
+  doc,
+  getDoc,
+  setDoc,
+  updateDoc,
+  addDoc,
+  increment
 } from './firebase-config.js';
 
 // DOM এলিমেন্ট
@@ -34,14 +39,12 @@ function renderHome() {
 // লগইন/লগআউট হ্যান্ডলার
 async function handleAuth() {
   if (currentUser) {
-    // লগআউট
     await signOut(auth);
     currentUser = null;
     document.getElementById('authBtn').textContent = 'ডিলার লগইন';
     document.getElementById('gamePanel').style.display = 'none';
     alert('সফলভাবে লগআউট হয়েছে');
   } else {
-    // লগইন
     const email = prompt("ডিলার ইমেইল দিন:");
     const password = prompt("পাসওয়ার্ড দিন:");
     
@@ -58,17 +61,64 @@ async function handleAuth() {
 }
 
 // গেম প্যানেল রেন্ডার
-function renderGamePanel() {
+async function renderGamePanel() {
   const gamePanel = document.getElementById('gamePanel');
   gamePanel.style.display = 'block';
+  
+  const adminPanelHTML = await renderAdminPanel();
+  
   gamePanel.innerHTML = `
-    <h2>বাজি ধরুন</h2>
-    <div class="numberPad"></div>
-    <div id="wallet">টোকেন: 0</div>
-    <div id="betHistory"></div>
+    <div class="game-container">
+      <section id="gameSection">
+        <h2>বাজি ধরুন</h2>
+        <div class="numberPad"></div>
+        <div id="wallet">টোকেন: 0</div>
+        <div id="betHistory"></div>
+      </section>
+      ${adminPanelHTML}
+    </div>
   `;
   
   generateNumberPad();
+  setupAdminEventListeners();
+}
+
+// এডমিন প্যানেল রেন্ডার
+async function renderAdminPanel() {
+  if(await isAdmin()) {
+    return `
+      <section class="admin-panel">
+        <h3>🔒 এডমিন কন্ট্রোল</h3>
+        <div class="admin-actions">
+          <button id="declareResultBtn">রেজাল্ট ঘোষণা করুন</button>
+          <button id="manageTokensBtn">টোকেন ম্যানেজ করুন</button>
+          <button id="viewAllBetsBtn">সকল বাজি দেখুন</button>
+        </div>
+      </section>
+    `;
+  }
+  return '';
+}
+
+// এডমিন ইভেন্ট লিসেনার সেটআপ
+function setupAdminEventListeners() {
+  if(document.getElementById('declareResultBtn')) {
+    document.getElementById('declareResultBtn').addEventListener('click', declareResult);
+  }
+  if(document.getElementById('manageTokensBtn')) {
+    document.getElementById('manageTokensBtn').addEventListener('click', manageTokens);
+  }
+  if(document.getElementById('viewAllBetsBtn')) {
+    document.getElementById('viewAllBetsBtn').addEventListener('click', viewAllBets);
+  }
+}
+
+// এডমিন চেক ফাংশন
+async function isAdmin() {
+  if(!auth.currentUser) return false;
+  const adminRef = doc(db, 'admins', auth.currentUser.uid);
+  const adminSnap = await getDoc(adminRef);
+  return adminSnap.exists();
 }
 
 // নাম্বার প্যাড জেনারেট
@@ -117,6 +167,60 @@ function addToBetHistory(number, tokens) {
   history.appendChild(betEntry);
 }
 
+// রেজাল্ট ঘোষণা করুন
+async function declareResult() {
+  const winningNumber = parseInt(prompt("জয়ী নাম্বার লিখুন (1-9):"));
+  
+  if(winningNumber >= 1 && winningNumber <= 9) {
+    try {
+      await addDoc(collection(db, 'results'), {
+        number: winningNumber,
+        declaredBy: currentUser.email,
+        timestamp: new Date()
+      });
+      alert(`${winningNumber} নম্বর জয়ী হিসেবে ঘোষণা করা হয়েছে!`);
+    } catch(error) {
+      alert("ত্রুটি: " + error.message);
+    }
+  }
+}
+
+// টোকেন ম্যানেজমেন্ট
+async function manageTokens() {
+  const userId = prompt("ডিলার ইউজার আইডি দিন:");
+  const amount = parseInt(prompt("কত টোকেন যোগ/বিয়োগ করতে চান? (+/-)"));
+  
+  if(userId && amount) {
+    try {
+      await updateDoc(doc(db, 'wallets', userId), {
+        balance: increment(amount),
+        lastUpdated: new Date()
+      });
+      alert(`${amount} টোকেন সফলভাবে আপডেট করা হয়েছে!`);
+    } catch(error) {
+      alert("ত্রুটি: " + error.message);
+    }
+  }
+}
+
+// সকল বাজি দেখুন
+async function viewAllBets() {
+  try {
+    const querySnapshot = await getDocs(collection(db, 'bets'));
+    let allBets = "<h4>সকল বাজি:</h4><ul>";
+    
+    querySnapshot.forEach((doc) => {
+      const bet = doc.data();
+      allBets += `<li>${bet.number} নম্বরে ${bet.tokens} টোকেন (${new Date(bet.timestamp?.toDate()).toLocaleString()})</li>`;
+    });
+    
+    allBets += "</ul>";
+    document.querySelector('.admin-panel').innerHTML += allBets;
+  } catch(error) {
+    alert("বাজি লোড করতে ত্রুটি: " + error.message);
+  }
+}
+
 // অ্যাপ ইনিশিয়ালাইজ
 renderHome();
 
@@ -127,42 +231,4 @@ onAuthStateChanged(auth, (user) => {
     renderGamePanel();
     document.getElementById('authBtn').textContent = 'লগআউট';
   }
-
-  async function renderGamePanel() {
-  const gamePanelHTML = `
-    <div class="game-container">
-      <section id="gameSection">
-        <h2>বাজি ধরুন</h2>
-        <div class="numberPad"></div>
-        <div id="wallet">টোকেন: 0</div>
-      </section>
-      ${await checkAdminPanel()}
-    </div>
-  `;
-  
-  document.getElementById('gamePanel').innerHTML = gamePanelHTML;
-  generateNumberPad();
-}
-
-// এডমিন প্যানেল চেক
-async function checkAdminPanel() {
-  if(await isAdmin()) {
-    return `
-      <section class="admin-panel">
-        <h3>এডমিন কন্ট্রোল</h3>
-        <button onclick="declareResult()">রেজাল্ট ঘোষণা করুন</button>
-        <button onclick="manageTokens()">টোকেন ম্যানেজ করুন</button>
-      </section>
-    `;
-  }
-  return '';
-}
-
-// এডমিন চেক ফাংশন
-async function isAdmin() {
-  if(!auth.currentUser) return false;
-  const adminRef = doc(db, 'admins', auth.currentUser.uid);
-  const adminSnap = await getDoc(adminRef);
-  return adminSnap.exists();
-}
 });
