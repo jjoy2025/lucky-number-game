@@ -1,4 +1,5 @@
-import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.0/firebase-app.js";
+// Firebase কম্প্যাটিবিলিটি মোড ব্যবহার করুন (GitHub Pages-এর জন্য উপযুক্ত)
+import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.0/firebase-app-compat.js";
 import { 
   getFirestore, 
   collection, 
@@ -6,14 +7,16 @@ import {
   getDoc, 
   setDoc, 
   updateDoc,
-  addDoc 
-} from "https://www.gstatic.com/firebasejs/9.6.0/firebase-firestore.js";
+  addDoc,
+  increment,
+  serverTimestamp
+} from "https://www.gstatic.com/firebasejs/9.6.0/firebase-firestore-compat.js";
 import { 
   getAuth, 
   signInWithEmailAndPassword,
   signOut,
   onAuthStateChanged 
-} from "https://www.gstatic.com/firebasejs/9.6.0/firebase-auth.js";
+} from "https://www.gstatic.com/firebasejs/9.6.0/firebase-auth-compat.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyArpsy4tpySdQEEuZzIa0ZWpz5VzdN7i_I",
@@ -25,10 +28,14 @@ const firebaseConfig = {
   measurementId: "G-5LL375YSZT"
 };
 
+// Firebase অ্যাপ ইনিশিয়ালাইজেশন
 const app = initializeApp(firebaseConfig);
+
+// Firebase সার্ভিসেস ইনিশিয়ালাইজেশন
 const db = getFirestore(app);
 const auth = getAuth(app);
 
+// এক্সপোর্ট করা ফাংশনগুলো
 export { 
   db, 
   auth, 
@@ -38,6 +45,8 @@ export {
   setDoc,
   updateDoc,
   addDoc,
+  increment,
+  serverTimestamp,
   signInWithEmailAndPassword,
   signOut,
   onAuthStateChanged
