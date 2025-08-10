@@ -23,4 +23,32 @@ body {
   body {
     font-size: 16px;
   }
+
+  /* এডমিন প্যানেল স্টাইল */
+.admin-panel {
+  margin-top: 30px;
+  padding: 20px;
+  background: #f8f9fa;
+  border-radius: 8px;
+  border: 1px solid #ddd;
+}
+
+.admin-panel h3 {
+  color: #e74c3c;
+  margin-bottom: 15px;
+}
+
+.admin-panel button {
+  background: #2c3e50;
+  color: white;
+  border: none;
+  padding: 10px 15px;
+  margin-right: 10px;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.admin-panel button:hover {
+  background: #1a252f;
+}
 }
