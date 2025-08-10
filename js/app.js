@@ -17,36 +17,34 @@ function showError(message) {
     errorDiv.style.display = 'block';
 }
 
-// Error catcher
+// Global error catcher
 window.onerror = function(message, source, lineno, colno, error) {
     showError(`${message} (Line: ${lineno}, Col: ${colno})`);
 };
 
-// Firebase টেস্ট কানেকশন
-try {
-    const app = firebase.initializeApp(firebaseConfig);
-    const db = firebase.firestore();
-
-    console.log("✅ Firebase connected!");
-    document.body.insertAdjacentHTML('beforeend', '<p style="color:green;">✅ Firebase connected successfully!</p>');
-
-    // টেস্ট ডাটা রিড
-    db.collection("test").get()
-        .then(snapshot => {
-            if (snapshot.empty) {
-                document.body.insertAdjacentHTML('beforeend', '<p style="color:orange;">⚠️ No test data found.</p>');
-            } else {
-                document.body.insertAdjacentHTML('beforeend', `<p style="color:blue;">📄 Found ${snapshot.size} test records.</p>`);
-            }
-        })
-        .catch(err => {
-            showError("Firestore read error: " + err.message);
-        });
-
-} catch (err) {
-    showError("Firebase init error: " + err.message);
-}
-
 document.addEventListener('DOMContentLoaded', () => {
-    console.log("✅ Page loaded successfully!");
+    try {
+        // Firebase Init
+        const app = firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+
+        console.log("✅ Firebase connected!");
+        document.body.insertAdjacentHTML('beforeend', '<p style="color:green;">✅ Firebase connected successfully!</p>');
+
+        // Firestore test read
+        db.collection("test").get()
+            .then(snapshot => {
+                if (snapshot.empty) {
+                    document.body.insertAdjacentHTML('beforeend', '<p style="color:orange;">⚠️ No test data found in Firestore collection "test".</p>');
+                } else {
+                    document.body.insertAdjacentHTML('beforeend', `<p style="color:blue;">📄 Found ${snapshot.size} test record(s) in Firestore.</p>`);
+                }
+            })
+            .catch(err => {
+                showError("Firestore read error: " + err.message);
+            });
+
+    } catch (err) {
+        showError("Firebase init error: " + err.message);
+    }
 });
