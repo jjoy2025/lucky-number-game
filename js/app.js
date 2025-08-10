@@ -127,4 +127,42 @@ onAuthStateChanged(auth, (user) => {
     renderGamePanel();
     document.getElementById('authBtn').textContent = 'লগআউট';
   }
+
+  async function renderGamePanel() {
+  const gamePanelHTML = `
+    <div class="game-container">
+      <section id="gameSection">
+        <h2>বাজি ধরুন</h2>
+        <div class="numberPad"></div>
+        <div id="wallet">টোকেন: 0</div>
+      </section>
+      ${await checkAdminPanel()}
+    </div>
+  `;
+  
+  document.getElementById('gamePanel').innerHTML = gamePanelHTML;
+  generateNumberPad();
+}
+
+// এডমিন প্যানেল চেক
+async function checkAdminPanel() {
+  if(await isAdmin()) {
+    return `
+      <section class="admin-panel">
+        <h3>এডমিন কন্ট্রোল</h3>
+        <button onclick="declareResult()">রেজাল্ট ঘোষণা করুন</button>
+        <button onclick="manageTokens()">টোকেন ম্যানেজ করুন</button>
+      </section>
+    `;
+  }
+  return '';
+}
+
+// এডমিন চেক ফাংশন
+async function isAdmin() {
+  if(!auth.currentUser) return false;
+  const adminRef = doc(db, 'admins', auth.currentUser.uid);
+  const adminSnap = await getDoc(adminRef);
+  return adminSnap.exists();
+}
 });
