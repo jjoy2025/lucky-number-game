@@ -1,9 +1,9 @@
-// এখানে আপনার Firebase কনফিগ বসান
+// Firebase configuration - আপনার দেওয়া আসল কনফিগ
 const firebaseConfig = {
-    apiKey: "আপনার_API_KEY",
-    authDomain: "আপনার_PROJECT_ID.firebaseapp.com",
-    projectId: "আপনার_PROJECT_ID",
-    storageBucket: "আপনার_PROJECT_ID.appspot.com",
-    messagingSenderId: "আপনার_SENDER_ID",
-    appId: "আপনার_APP_ID"
+    apiKey: "AIzaSyBu7VZTJrU7EJbQyl41g7CFY7DqAcq7BG4",
+    authDomain: "lucky-number-game-2025.firebaseapp.com",
+    projectId: "lucky-number-game-2025",
+    storageBucket: "lucky-number-game-2025.appspot.com",
+    messagingSenderId: "636737807287",
+    appId: "1:636737807287:web:fa8d8af1e48f929b5b7a6a"
 };
