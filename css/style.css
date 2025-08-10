@@ -1,207 +1,192 @@
-/* বেসিক রিসেট ও গ্লোবাল স্টাইল */
+/* ===== রিসেট ===== */
 * {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
-  font-family: 'Segoe UI', Arial, sans-serif;
 }
 
 body {
-  background-color: #f5f5f5;
+  font-family: "Noto Sans Bengali", sans-serif;
+  background: #f4f6f8;
   color: #333;
-  line-height: 1.6;
-  padding: 20px;
-  max-width: 100%;
-  overflow-x: hidden;
+  line-height: 1.5;
 }
 
-/* হেডার স্টাইল */
 header {
-  background-color: #2c3e50;
+  background: linear-gradient(90deg, #1d2671, #c33764);
   color: white;
-  padding: 1rem;
-  border-radius: 8px;
-  margin-bottom: 20px;
+  padding: 15px;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
 }
 
-h1 {
-  font-size: 1.8rem;
+header h1 {
+  font-size: 1.6rem;
 }
 
-h2, h3 {
-  color: #2c3e50;
-  margin-bottom: 15px;
-}
-
-/* বাটন স্টাইল */
-button {
-  cursor: pointer;
-  transition: all 0.3s ease;
-}
-
-#authBtn {
-  padding: 8px 16px;
-  background-color: #3498db;
-  color: white;
+header button {
+  background: #ff9800;
   border: none;
-  border-radius: 4px;
-  font-size: 1rem;
+  padding: 8px 15px;
+  border-radius: 6px;
+  cursor: pointer;
+  color: white;
+  font-weight: bold;
 }
 
-#authBtn:hover {
-  background-color: #2980b9;
+header button:hover {
+  background: #e68900;
 }
 
-/* গেম কন্টেইনার */
-.game-container {
-  background: white;
-  border-radius: 8px;
+main {
   padding: 20px;
-  box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-  margin-top: 20px;
 }
 
-/* নাম্বার প্যাড স্টাইল */
+/* ===== রেজাল্ট সেকশন ===== */
+#results {
+  background: white;
+  padding: 15px;
+  border-radius: 8px;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+  margin-bottom: 20px;
+}
+
+#results h2 {
+  margin-bottom: 10px;
+  border-bottom: 2px solid #eee;
+  padding-bottom: 5px;
+}
+
+/* ===== নাম্বার প্যাড ===== */
 .numberPad {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(auto-fit, minmax(60px, 1fr));
   gap: 10px;
-  margin: 20px 0;
+  margin: 15px 0;
 }
 
 .numberBtn {
-  padding: 15px;
-  font-size: 1.5rem;
-  background-color: #3498db;
+  background: #4cafef;
   color: white;
-  border: none;
+  font-size: 1.4rem;
+  padding: 15px;
   border-radius: 8px;
-  aspect-ratio: 1/1;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s ease-in-out;
 }
 
 .numberBtn:hover {
-  background-color: #2980b9;
-  transform: scale(1.05);
+  background: #388ac8;
 }
 
-/* ওয়ালেট স্টাইল */
+/* ===== ওয়ালেট ===== */
 #wallet {
   font-size: 1.2rem;
-  font-weight: bold;
-  padding: 10px;
-  background: #eaf2f8;
-  border-radius: 4px;
-  margin: 15px 0;
-  text-align: center;
+  background: #fff3cd;
+  padding: 8px 12px;
+  border-radius: 6px;
+  margin-bottom: 15px;
+  display: inline-block;
 }
 
-/* বেট হিস্ট্রি স্টাইল */
+/* ===== বেট হিস্ট্রি ===== */
 #betHistory {
-  margin-top: 20px;
-  border-top: 1px solid #eee;
-  padding-top: 15px;
+  background: white;
+  padding: 10px;
+  border-radius: 8px;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.1);
 }
 
 .bet-entry {
-  padding: 10px;
-  margin: 8px 0;
-  background: #f9f9f9;
-  border-radius: 4px;
   display: flex;
   justify-content: space-between;
+  padding: 5px 0;
+  border-bottom: 1px solid #eee;
 }
 
-/* এডমিন প্যানেল স্টাইল */
+.bet-entry:last-child {
+  border-bottom: none;
+}
+
+/* ===== অ্যাডমিন প্যানেল ===== */
 .admin-panel {
-  margin-top: 30px;
-  padding: 20px;
-  background: #f8f9fa;
+  background: #e3f2fd;
+  padding: 15px;
   border-radius: 8px;
-  border: 1px solid #ddd;
-}
-
-.admin-panel h3 {
-  color: #e74c3c;
-  margin-bottom: 15px;
-  display: flex;
-  align-items: center;
-  gap: 8px;
+  margin-top: 20px;
+  border-left: 5px solid #2196f3;
 }
 
 .admin-actions {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  display: flex;
+  flex-wrap: wrap;
   gap: 10px;
 }
 
 .admin-actions button {
-  background: #2c3e50;
+  background: #2196f3;
   color: white;
   border: none;
-  padding: 10px;
-  border-radius: 4px;
-  font-size: 0.9rem;
+  padding: 10px 14px;
+  border-radius: 6px;
+  cursor: pointer;
 }
 
 .admin-actions button:hover {
-  background: #1a252f;
+  background: #1976d2;
 }
 
-/* রেজাল্ট সেকশন */
-#todayResults {
-  padding: 15px;
-  background: #e8f4f8;
-  border-radius: 6px;
+/* ===== টেবিল ===== */
+table {
+  width: 100%;
+  border-collapse: collapse;
+  background: white;
+  border-radius: 8px;
+  overflow: hidden;
+  margin-top: 15px;
+}
+
+table th, table td {
+  padding: 10px;
+  text-align: center;
+  border-bottom: 1px solid #eee;
+}
+
+table th {
+  background: #f5f5f5;
+}
+
+table tr:hover {
+  background: #f9f9f9;
+}
+
+/* ===== CSV বাটন ===== */
+#downloadCSV {
   margin-top: 10px;
+  padding: 8px 14px;
+  background: #4caf50;
+  border: none;
+  border-radius: 6px;
+  color: white;
+  cursor: pointer;
 }
 
-/* মোবাইল রেসপনসিভ */
+#downloadCSV:hover {
+  background: #388e3c;
+}
+
+/* ===== মোবাইল রেসপনসিভ ===== */
 @media (max-width: 600px) {
-  body {
-    padding: 10px;
-  }
-
-  header {
-    flex-direction: column;
-    gap: 10px;
-    text-align: center;
-  }
-
-  .numberBtn {
-    padding: 10px;
+  header h1 {
     font-size: 1.2rem;
   }
-
-  .admin-actions {
-    grid-template-columns: 1fr;
+  .numberBtn {
+    font-size: 1.1rem;
+    padding: 12px;
   }
-}
-
-/* ইউটিলিটি ক্লাস */
-.hidden {
-  display: none !important;
-}
-
-.text-center {
-  text-align: center;
-}
-
-.alert {
-  padding: 10px 15px;
-  border-radius: 4px;
-  margin: 10px 0;
-}
-
-.alert-success {
-  background: #d4edda;
-  color: #155724;
-}
-
-.alert-error {
-  background: #f8d7da;
-  color: #721c24;
+  #wallet {
+    font-size: 1rem;
+  }
 }
