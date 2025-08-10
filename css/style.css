@@ -1,0 +1,20 @@
+/* মোবাইল রেসপনসিভ স্টাইল */
+@media (max-width: 600px) {
+    body {
+        padding: 10px;
+    }
+    .container {
+        padding: 15px;
+    }
+}
+
+/* বাটন স্টাইল */
+.btn {
+    background-color: #3498db;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    margin: 5px;
+    border-radius: 5px;
+    font-size: 16px;
+}
