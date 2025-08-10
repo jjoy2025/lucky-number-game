@@ -1,4 +1,10 @@
-import { db, auth } from './firebase-config.js';
+import { 
+  db, 
+  auth,
+  signInWithEmailAndPassword,
+  signOut,
+  onAuthStateChanged
+} from './firebase-config.js';
 
 // DOM এলিমেন্ট
 const app = document.getElementById('app');
