@@ -1,13 +1,27 @@
-// Firebase Init
-firebase.initializeApp(firebaseConfig);
-const auth = firebase.auth();
-const db = firebase.firestore();
+import { auth, db } from './firebase-config.js';
+import {
+    signOut,
+    onAuthStateChanged
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+import {
+    doc,
+    getDoc,
+    updateDoc,
+    onSnapshot,
+    addDoc,
+    collection,
+    query,
+    where,
+    orderBy,
+    limit,
+    serverTimestamp
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 let currentUser = null;
 let currentGameSlot = null;
 
 // লগইন চেক
-auth.onAuthStateChanged(user => {
+onAuthStateChanged(auth, async (user) => {
     if (!user) {
         window.location.href = "index.html";
     } else {
@@ -20,17 +34,16 @@ auth.onAuthStateChanged(user => {
 });
 
 // লগআউট
-function logout() {
-    auth.signOut().then(() => {
-        window.location.href = "index.html";
-    });
-}
+window.logout = async function () {
+    await signOut(auth);
+    window.location.href = "index.html";
+};
 
 // ব্যালেন্স লোড
 function loadDealerBalance() {
-    db.collection("wallets").doc(currentUser.uid).onSnapshot(doc => {
-        if (doc.exists) {
-            document.getElementById("dealerBalance").textContent = doc.data().balance || 0;
+    onSnapshot(doc(db, "wallets", currentUser.uid), (docSnap) => {
+        if (docSnap.exists()) {
+            document.getElementById("dealerBalance").textContent = docSnap.data().tokens || 0;
         }
     });
 }
@@ -56,7 +69,7 @@ function loadCurrentGameSlot() {
         gameTime.setSeconds(0);
 
         let diff = gameTime - now;
-        if (diff > 0 && diff > 20 * 60 * 1000) { // 20 মিনিট আগে বেট বন্ধ
+        if (diff > 20 * 60 * 1000) { // ২০ মিনিট আগে বেট বন্ধ
             currentGameSlot = i + 1;
             document.getElementById("currentGameTime").textContent = times[i].label;
             return;
@@ -66,7 +79,7 @@ function loadCurrentGameSlot() {
 }
 
 // বেট প্লেস করা
-function placeBet() {
+window.placeBet = async function () {
     const number = parseInt(document.getElementById("betNumber").value);
     const tokens = parseInt(document.getElementById("betTokens").value);
 
@@ -83,47 +96,51 @@ function placeBet() {
         return;
     }
 
-    // ব্যালেন্স চেক
-    db.collection("wallets").doc(currentUser.uid).get().then(doc => {
-        if (!doc.exists || (doc.data().balance || 0) < tokens) {
-            alert("❌ পর্যাপ্ত টোকেন নেই");
-            return;
-        }
+    const walletRef = doc(db, "wallets", currentUser.uid);
+    const walletSnap = await getDoc(walletRef);
 
-        // বেট সেভ
-        db.collection("bets").add({
-            userId: currentUser.uid,
-            email: currentUser.email,
-            gameSlot: currentGameSlot,
-            number: number,
-            tokens: tokens,
-            timestamp: firebase.firestore.FieldValue.serverTimestamp()
-        }).then(() => {
-            // ব্যালেন্স আপডেট
-            db.collection("wallets").doc(currentUser.uid).update({
-                balance: firebase.firestore.FieldValue.increment(-tokens)
-            });
-            alert("✅ বেট দেওয়া হয়েছে");
-            document.getElementById("betNumber").value = "";
-            document.getElementById("betTokens").value = "";
-        });
+    if (!walletSnap.exists() || (walletSnap.data().tokens || 0) < tokens) {
+        alert("❌ পর্যাপ্ত টোকেন নেই");
+        return;
+    }
+
+    // বেট সেভ
+    await addDoc(collection(db, "bets"), {
+        userId: currentUser.uid,
+        email: currentUser.email,
+        gameSlot: currentGameSlot,
+        number: number,
+        tokens: tokens,
+        timestamp: serverTimestamp()
     });
-}
+
+    // ব্যালেন্স আপডেট
+    await updateDoc(walletRef, {
+        tokens: (walletSnap.data().tokens || 0) - tokens
+    });
+
+    alert("✅ বেট দেওয়া হয়েছে");
+    document.getElementById("betNumber").value = "";
+    document.getElementById("betTokens").value = "";
+};
 
 // নিজের বেট হিস্ট্রি লোড
 function loadBetHistory() {
-    db.collection("bets")
-        .where("userId", "==", currentUser?.uid)
-        .orderBy("timestamp", "desc")
-        .limit(20)
-        .onSnapshot(snapshot => {
-            const list = document.getElementById("betList");
-            list.innerHTML = "";
-            snapshot.forEach(doc => {
-                const data = doc.data();
-                const li = document.createElement("li");
-                li.textContent = `গেম ${data.gameSlot} - নাম্বার ${data.number} - ${data.tokens} টোকেন`;
-                list.appendChild(li);
-            });
+    const q = query(
+        collection(db, "bets"),
+        where("userId", "==", currentUser.uid),
+        orderBy("timestamp", "desc"),
+        limit(20)
+    );
+
+    onSnapshot(q, (snapshot) => {
+        const list = document.getElementById("betList");
+        list.innerHTML = "";
+        snapshot.forEach((docSnap) => {
+            const data = docSnap.data();
+            const li = document.createElement("li");
+            li.textContent = `গেম ${data.gameSlot} - নাম্বার ${data.number} - ${data.tokens} টোকেন`;
+            list.appendChild(li);
         });
+    });
 }
