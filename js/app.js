@@ -1,45 +1,54 @@
-// Firebase Init
-firebase.initializeApp(firebaseConfig);
-const auth = firebase.auth();
+// app.js
 
-// Login Function
-function loginUser() {
-    const email = document.getElementById("email").value.trim();
-    const password = document.getElementById("password").value.trim();
-    const messageEl = document.getElementById("message");
+// Firebase config লোড
+import { auth, db } from './firebase-config.js';
+import {
+    signInWithEmailAndPassword,
+    onAuthStateChanged
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+import {
+    doc,
+    getDoc
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
-    if (!email || !password) {
-        messageEl.textContent = "⚠️ ইমেইল এবং পাসওয়ার্ড দিন";
-        return;
-    }
+// এডমিন UID (লক করা)
+const ADMIN_UID = "dfAI8a7DfMRxgeymYJlGwuruxz63";
 
-    auth.signInWithEmailAndPassword(email, password)
-        .then(userCredential => {
+// লগইন ফর্ম এলিমেন্ট
+const loginForm = document.getElementById('loginForm');
+if (loginForm) {
+    loginForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+
+        const email = document.getElementById('email').value.trim();
+        const password = document.getElementById('password').value.trim();
+
+        try {
+            const userCredential = await signInWithEmailAndPassword(auth, email, password);
             const user = userCredential.user;
 
-            // Admin UID
-            const adminUID = "dfAI8a7DfMRxgeymYJlGwuruxz63";
-
-            if (user.uid === adminUID) {
-                window.location.href = "admin-dashboard.html";
+            if (user.uid === ADMIN_UID) {
+                // এডমিন হলে
+                window.location.href = "./admin-dashboard.html";
             } else {
-                window.location.href = "dealer-dashboard.html";
+                // ডিলার হলে
+                window.location.href = "./dealer-dashboard.html";
             }
-        })
-        .catch(error => {
-            console.error(error);
-            messageEl.textContent = "❌ লগইন ব্যর্থ: " + error.message;
-        });
+        } catch (error) {
+            alert("লগইন ব্যর্থ হয়েছে: " + error.message);
+        }
+    });
 }
 
-// Auto Redirect if already logged in
-auth.onAuthStateChanged(user => {
+// যদি কেউ লগইন করা থাকে, সরাসরি রিডিরেক্ট হবে
+onAuthStateChanged(auth, async (user) => {
     if (user) {
-        const adminUID = "dfAI8a7DfMRxgeymYJlGwuruxz63";
-        if (user.uid === adminUID) {
-            window.location.href = "admin-dashboard.html";
-        } else {
-            window.location.href = "dealer-dashboard.html";
+        if (window.location.pathname.endsWith("index.html") || window.location.pathname.endsWith("/")) {
+            if (user.uid === ADMIN_UID) {
+                window.location.href = "./admin-dashboard.html";
+            } else {
+                window.location.href = "./dealer-dashboard.html";
+            }
         }
     }
 });
