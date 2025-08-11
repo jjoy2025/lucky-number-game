@@ -78,7 +78,7 @@ if (dealerSearchInput) {
     dealerSearchInput.addEventListener('input', (e) => {
         const query = e.target.value.toLowerCase();
         dealerListDropdown.innerHTML = '';
-        selectedDealerId = null;
+        selectedDealerId = null; // প্রতিবার ইনপুট পরিবর্তনের সময় নির্বাচন রিসেট করা
         currentDealerBalanceEl.textContent = '0';
         
         if (query.length > 0) {
@@ -113,12 +113,13 @@ if (dealerSearchInput) {
 
 // ক্রেডিট টোকেন ফাংশন
 document.getElementById('creditBtn').addEventListener('click', async () => {
-    // এখানে নতুন লজিক যোগ করা হয়েছে
-    if (!selectedDealerId) {
-        const dealerEmail = dealerSearchInput.value.toLowerCase();
-        const dealer = allDealers.find(d => d.email.toLowerCase() === dealerEmail);
+    // ডিলার নির্বাচনের জন্য নতুন লজিক
+    let dealerIdToUpdate = selectedDealerId;
+    if (!dealerIdToUpdate) {
+        const dealerEmail = dealerSearchInput.value.trim();
+        const dealer = allDealers.find(d => d.email === dealerEmail);
         if (dealer) {
-            selectedDealerId = dealer.id;
+            dealerIdToUpdate = dealer.id;
         } else {
             alert("দয়া করে একজন বৈধ ডিলার নির্বাচন করুন বা সঠিক ইমেল লিখুন।");
             return;
@@ -132,13 +133,14 @@ document.getElementById('creditBtn').addEventListener('click', async () => {
     }
 
     try {
-        const dealerDocRef = doc(db, "wallets", selectedDealerId);
+        const dealerDocRef = doc(db, "wallets", dealerIdToUpdate);
         await updateDoc(dealerDocRef, {
             tokens: increment(amount)
         });
         
         // UI আপডেট
-        const newBalance = parseInt(currentDealerBalanceEl.textContent) + amount;
+        const currentBalance = parseInt(currentDealerBalanceEl.textContent);
+        const newBalance = currentBalance + amount;
         currentDealerBalanceEl.textContent = newBalance;
         
         alert(`${amount} টোকেন সফলভাবে ক্রেডিট করা হয়েছে!`);
@@ -152,12 +154,13 @@ document.getElementById('creditBtn').addEventListener('click', async () => {
 
 // ডেবিট টোকেন ফাংশন
 document.getElementById('debitBtn').addEventListener('click', async () => {
-    // এখানে নতুন লজিক যোগ করা হয়েছে
-    if (!selectedDealerId) {
-        const dealerEmail = dealerSearchInput.value.toLowerCase();
-        const dealer = allDealers.find(d => d.email.toLowerCase() === dealerEmail);
+    // ডিলার নির্বাচনের জন্য নতুন লজিক
+    let dealerIdToUpdate = selectedDealerId;
+    if (!dealerIdToUpdate) {
+        const dealerEmail = dealerSearchInput.value.trim();
+        const dealer = allDealers.find(d => d.email === dealerEmail);
         if (dealer) {
-            selectedDealerId = dealer.id;
+            dealerIdToUpdate = dealer.id;
         } else {
             alert("দয়া করে একজন বৈধ ডিলার নির্বাচন করুন বা সঠিক ইমেল লিখুন।");
             return;
@@ -171,7 +174,7 @@ document.getElementById('debitBtn').addEventListener('click', async () => {
     }
 
     try {
-        const dealerDocRef = doc(db, "wallets", selectedDealerId);
+        const dealerDocRef = doc(db, "wallets", dealerIdToUpdate);
         const currentBalance = parseInt(currentDealerBalanceEl.textContent);
         if (currentBalance < amount) {
             alert("ডিলারের অ্যাকাউন্টে পর্যাপ্ত টোকেন নেই।");
@@ -255,7 +258,6 @@ document.querySelectorAll('.saveResultBtn').forEach(btn => {
 
 // বেটিং গ্রাফ লোড করার ফাংশন
 async function loadBettingGraphs() {
-    // এই ফাংশন অপরিবর্তিত থাকবে
     const today = new Date().toLocaleDateString("en-GB");
     const gameSlots = [1, 2, 3, 4, 5, 6, 7, 8];
 
