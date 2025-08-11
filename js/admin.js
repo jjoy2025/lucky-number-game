@@ -16,6 +16,7 @@ import {
     updateDoc,
     addDoc,
     query,
+    where,
     orderBy,
     limit,
     serverTimestamp,
@@ -39,7 +40,7 @@ onAuthStateChanged(auth, async (user) => {
         window.location.href = "./index.html";
     } else {
         loadDealers();
-        loadOldResults();
+        loadBettingGraphs();
     }
 });
 
@@ -70,7 +71,6 @@ async function loadDealers() {
         dealerListEl.appendChild(tr);
     }
     
-    // টোকেন ক্রেডিট/ডেবিট বাটনগুলোর জন্য ইভেন্ট লিসেনার
     document.querySelectorAll('.creditBtn').forEach(button => {
         button.addEventListener('click', (e) => creditTokens(e.target.dataset.id));
     });
@@ -111,6 +111,33 @@ window.debitTokens = async function (dealerId) {
     }
 };
 
+// নতুন ডিলার অ্যাড করার লজিক
+const addDealerForm = document.getElementById('addDealerForm');
+if (addDealerForm) {
+    addDealerForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const email = document.getElementById('dealerEmailInput').value;
+        const password = document.getElementById('dealerPasswordInput').value;
+
+        try {
+            const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+            const userId = userCredential.user.uid;
+
+            await setDoc(doc(db, "wallets", userId), {
+                email: email,
+                tokens: 0,
+                createdAt: serverTimestamp()
+            });
+
+            alert(`ডিলার ${email} সফলভাবে যোগ করা হয়েছে!`);
+            addDealerForm.reset();
+            loadDealers(); // ডিলার লিস্ট রিফ্রেশ করুন
+        } catch (error) {
+            alert("ডিলার যোগ করতে ব্যর্থ: " + error.message);
+        }
+    });
+}
+
 // রেজাল্ট সেভ
 document.querySelectorAll('.saveResultBtn').forEach(btn => {
     btn.addEventListener('click', async () => {
@@ -138,29 +165,81 @@ document.querySelectorAll('.saveResultBtn').forEach(btn => {
         });
 
         alert(`গেম ${slot} রেজাল্ট সেভ হয়েছে!`);
-        loadOldResults();
+        // রেজাল্ট সেভ করার পর গ্রাফ লোড করা যেতে পারে
+        loadBettingGraphs();
     });
 });
 
-// গত ১০ দিনের রেজাল্ট
-async function loadOldResults() {
-    const oldResultsEl = document.getElementById('oldResultsList');
-    oldResultsEl.innerHTML = "";
+// বেটিং গ্রাফ লোড করার ফাংশন
+async function loadBettingGraphs() {
+    const today = new Date().toLocaleDateString("en-GB");
+    const gameSlots = [1, 2, 3, 4, 5, 6, 7, 8];
 
-    const q = query(collection(db, "results"), orderBy("createdAt", "desc"), limit(80));
-    const snap = await getDocs(q);
+    for (const slot of gameSlots) {
+        const q = query(
+            collection(db, "bets"),
+            where("gameSlot", "==", slot)
+        );
+        const snapshot = await getDocs(q);
 
-    let currentDate = "";
-    snap.forEach(docSnap => {
-        const data = docSnap.data();
-        if (data.date !== currentDate) {
-            currentDate = data.date;
-            const h3 = document.createElement('h3');
-            h3.textContent = currentDate;
-            oldResultsEl.appendChild(h3);
+        const bettingData = {
+            '0': 0, '1': 0, '2': 0, '3': 0, '4': 0,
+            '5': 0, '6': 0, '7': 0, '8': 0, '9': 0
+        };
+
+        snapshot.forEach(doc => {
+            const data = doc.data();
+            const number = data.number;
+            const tokens = data.tokens;
+            if (bettingData[number] !== undefined) {
+                bettingData[number] += tokens;
+            }
+        });
+
+        const ctx = document.getElementById(`chart-slot-${slot}`);
+        if (ctx) {
+            // যদি গ্রাফটি ইতিমধ্যেই বিদ্যমান থাকে, তাহলে আপডেট করা হবে
+            if (window.myCharts && window.myCharts[`chart-slot-${slot}`]) {
+                window.myCharts[`chart-slot-${slot}`].data.datasets[0].data = Object.values(bettingData);
+                window.myCharts[`chart-slot-${slot}`].update();
+            } else {
+                // নতুন গ্রাফ তৈরি করা হবে
+                const newChart = new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: Object.keys(bettingData),
+                        datasets: [{
+                            label: 'মোট টোকেন',
+                            data: Object.values(bettingData),
+                            backgroundColor: 'rgba(54, 162, 235, 0.6)',
+                            borderColor: 'rgba(54, 162, 235, 1)',
+                            borderWidth: 1
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                title: {
+                                    display: true,
+                                    text: 'টোকেন'
+                                }
+                            },
+                            x: {
+                                title: {
+                                    display: true,
+                                    text: 'নাম্বার'
+                                }
+                            }
+                        }
+                    }
+                });
+                if (!window.myCharts) {
+                    window.myCharts = {};
+                }
+                window.myCharts[`chart-slot-${slot}`] = newChart;
+            }
         }
-        const p = document.createElement('p');
-        p.textContent = `গেম ${data.slot}: ${data.patti} - ${data.single}`;
-        oldResultsEl.appendChild(p);
-    });
+    }
 }
