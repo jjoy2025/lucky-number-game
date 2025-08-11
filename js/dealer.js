@@ -1,3 +1,8 @@
+// js/dealer.js
+
+import {
+  initializeApp
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import {
   getAuth,
   onAuthStateChanged,
@@ -7,16 +12,24 @@ import {
   getFirestore,
   doc,
   getDoc,
-  setDoc,
+  addDoc,
   collection,
   query,
   where,
   getDocs,
-  orderBy
+  orderBy,
+  serverTimestamp,
+  updateDoc,
+  increment
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import {
+  firebaseConfig
+} from './firebase-config.js';
 
-const auth = getAuth();
-const db = getFirestore();
+// Firebase অ্যাপ ইনিশিয়ালাইজ করুন
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
 
 // গেমের সময়গুলো লোড করা
 const times = [{
@@ -73,11 +86,9 @@ function loadCurrentGameSlot() {
 // লগইন চেক করা
 onAuthStateChanged(auth, async (user) => {
   if (user) {
-    console.log("ব্যবহারকারী লগইন করেছে:", user.email);
     loadCurrentGameSlot();
     fetchDealerData(user.uid);
   } else {
-    console.log("কোনো ব্যবহারকারী লগইন করা নেই।");
     window.location.href = "index.html";
   }
 });
@@ -85,12 +96,12 @@ onAuthStateChanged(auth, async (user) => {
 // ডিলারের ডেটা, হিস্টরি এবং উইনিং ভাউচার লোড করা
 async function fetchDealerData(dealerId) {
   try {
-    const dealerDocRef = doc(db, "dealers", dealerId);
+    const dealerDocRef = doc(db, "wallets", dealerId);
     const dealerDoc = await getDoc(dealerDocRef);
 
     if (dealerDoc.exists()) {
       const dealerData = dealerDoc.data();
-      document.getElementById("currentBalance").textContent = dealerData.balance;
+      document.getElementById("currentBalance").textContent = dealerData.tokens;
 
       // বেটিং হিস্টরি এবং উইনিং ভাউচার লোড করা
       await fetchDealerBets(dealerId);
@@ -106,44 +117,55 @@ async function fetchDealerData(dealerId) {
 async function fetchDealerBets(dealerId) {
   try {
     const betsCollectionRef = collection(db, "bets");
-    const q = query(betsCollectionRef, where("dealerId", "==", dealerId), orderBy("timestamp", "desc"));
+    const q = query(betsCollectionRef, where("userId", "==", dealerId), orderBy("timestamp", "desc"));
     const querySnapshot = await getDocs(q);
+    const resultsSnapshot = await getDocs(collection(db, "results"));
+    const results = {};
+    resultsSnapshot.forEach(doc => {
+      const data = doc.data();
+      const date = new Date(data.createdAt.toDate()).toLocaleDateString("en-GB");
+      const key = `${date}_${data.slot}`;
+      results[key] = data;
+    });
 
     const bettingHistoryDiv = document.getElementById("bettingHistory");
     const winningVouchersDiv = document.getElementById("winningVouchers");
     bettingHistoryDiv.innerHTML = '';
     winningVouchersDiv.innerHTML = '';
 
-    const hasWinningVouchers = false;
-    const hasBettingHistory = false;
+    let hasWinningVouchers = false;
+    let hasBettingHistory = false;
 
     for (const doc of querySnapshot.docs) {
       const bet = doc.data();
+      const betDate = new Date(bet.timestamp.toDate()).toLocaleDateString("en-GB");
+      const resultKey = `${betDate}_${bet.gameSlot}`;
+      const result = results[resultKey];
 
       // বেটিং হিস্টরি আইটেম তৈরি করা
       const historyItem = document.createElement('div');
       historyItem.classList.add('result-item');
       historyItem.innerHTML = `
-                <p><strong>গেম স্লট:</strong> ${times[bet.gameSlot - 1].label}</p>
-                <p><strong>আপনার নাম্বার:</strong> ${bet.betNumber}</p>
-                <p><strong>টোকেন:</strong> ${bet.betAmount}</p>
-                <p><strong>সময়:</strong> ${new Date(bet.timestamp).toLocaleString('bn-BD')}</p>
-            `;
+        <p><strong>গেম স্লট:</strong> ${times[bet.gameSlot - 1].label}</p>
+        <p><strong>আপনার নাম্বার:</strong> ${bet.number}</p>
+        <p><strong>টোকেন:</strong> ${bet.tokens}</p>
+        <p><strong>সময়:</strong> ${new Date(bet.timestamp.toDate()).toLocaleString('bn-BD')}</p>
+      `;
       bettingHistoryDiv.appendChild(historyItem);
       hasBettingHistory = true;
 
       // উইনিং ভাউচার চেক করা
-      if (bet.winningNumber === bet.betNumber && bet.winningNumber !== null) {
-        const winningAmount = bet.betAmount * 9;
+      if (result && result.single === bet.number) {
+        const winningAmount = bet.tokens * 9;
         const voucherItem = document.createElement('div');
         voucherItem.classList.add('voucher-item');
         voucherItem.innerHTML = `
-                    <h4>উইনিং ভাউচার</h4>
-                    <p><strong>গেম:</strong> ${times[bet.gameSlot - 1].label}</p>
-                    <p><strong>জয়ী নাম্বার:</strong> ${bet.winningNumber}</p>
-                    <p><strong>আপনার বেট:</strong> ${bet.betNumber} (${bet.betAmount} টোকেন)</p>
-                    <div class="winning-amount">আপনি জিতেছেন: ${winningAmount} টোকেন</div>
-                `;
+          <h4>উইনিং ভাউচার</h4>
+          <p><strong>গেম:</strong> ${times[bet.gameSlot - 1].label}</p>
+          <p><strong>জয়ী নাম্বার:</strong> ${result.single}</p>
+          <p><strong>আপনার বেট:</strong> ${bet.number} (${bet.tokens} টোকেন)</p>
+          <div class="winning-amount">আপনি জিতেছেন: ${winningAmount} টোকেন</div>
+        `;
         winningVouchersDiv.appendChild(voucherItem);
         hasWinningVouchers = true;
       }
@@ -185,9 +207,9 @@ document.getElementById("bettingForm").addEventListener("submit", async (e) => {
   }
 
   try {
-    const dealerDocRef = doc(db, "dealers", user.uid);
+    const dealerDocRef = doc(db, "wallets", user.uid);
     const dealerDoc = await getDoc(dealerDocRef);
-    const currentBalance = dealerDoc.data().balance;
+    const currentBalance = dealerDoc.data().tokens;
 
     if (currentBalance < betAmount) {
       alert("আপনার অ্যাকাউন্টে পর্যাপ্ত টোকেন নেই।");
@@ -195,21 +217,17 @@ document.getElementById("bettingForm").addEventListener("submit", async (e) => {
     }
 
     // নতুন বেট যোগ করা
-    const newBetRef = doc(collection(db, "bets"));
-    await setDoc(newBetRef, {
-      dealerId: user.uid,
+    await addDoc(collection(db, "bets"), {
+      userId: user.uid,
       gameSlot: currentGameSlot,
-      betNumber: betNumber,
-      betAmount: betAmount,
-      winningNumber: null, // ডিফল্ট হিসেবে null
-      timestamp: new Date().getTime(),
+      number: betNumber,
+      tokens: betAmount,
+      timestamp: serverTimestamp(),
     });
 
     // ব্যালেন্স আপডেট করা
-    await setDoc(dealerDocRef, {
-      balance: currentBalance - betAmount
-    }, {
-      merge: true
+    await updateDoc(dealerDocRef, {
+      tokens: increment(-betAmount)
     });
 
     alert("আপনার বেট সফলভাবে জমা দেওয়া হয়েছে!");
@@ -225,8 +243,10 @@ document.getElementById("bettingForm").addEventListener("submit", async (e) => {
 // লগআউট
 document.getElementById("logoutBtn").addEventListener("click", () => {
   signOut(auth).then(() => {
+    alert("সফলভাবে লগআউট হয়েছে।");
     window.location.href = "index.html";
   }).catch((error) => {
     console.error("লগআউট করতে ব্যর্থ:", error);
+    alert("লগআউট করতে ব্যর্থ: " + error.message);
   });
 });
