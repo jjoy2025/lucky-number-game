@@ -2,46 +2,84 @@
 <html lang="bn">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>The Lucky Number - Admin Panel</title>
-    <link rel="stylesheet" href="css/style.css">
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="./css/style.css">
 </head>
 <body>
     <header>
-        <h1>🎯 The Lucky Number - Admin Panel</h1>
-        <button onclick="logout()">Logout</button>
+        <h1>The Lucky Number - Admin Panel</h1>
+        <button id="logoutBtn">লগআউট</button>
     </header>
 
-    <section>
-        <h2>ডিলার ম্যানেজমেন্ট</h2>
-        <div id="dealerList"></div>
-    </section>
+    <main>
+        <section id="dealerSection">
+            <h2>ডিলার লিস্ট</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>ডিলার ইমেইল</th>
+                        <th>টোকেন ব্যালেন্স</th>
+                        <th>ক্রেডিট</th>
+                        <th>ডেবিট</th>
+                    </tr>
+                </thead>
+                <tbody id="dealerList"></tbody>
+            </table>
+        </section>
 
-    <section>
-        <h2>আজকের বেটিং ডাটা (গ্রাফ)</h2>
-        <canvas id="betChart" width="400" height="200"></canvas>
-    </section>
+        <section id="resultSection">
+            <h2>আজকের রেজাল্ট সেট করুন</h2>
+            <div id="todayResults">
+                <!-- ৮টি টাইম স্লট -->
+                <div class="resultRow" data-slot="1">
+                    <label>গেম ১ - Patti:</label><input type="text" class="pattiInput">
+                    <label>Single:</label><input type="text" class="singleInput">
+                    <button class="saveResultBtn">সেভ</button>
+                </div>
+                <div class="resultRow" data-slot="2">
+                    <label>গেম ২ - Patti:</label><input type="text" class="pattiInput">
+                    <label>Single:</label><input type="text" class="singleInput">
+                    <button class="saveResultBtn">সেভ</button>
+                </div>
+                <div class="resultRow" data-slot="3">
+                    <label>গেম ৩ - Patti:</label><input type="text" class="pattiInput">
+                    <label>Single:</label><input type="text" class="singleInput">
+                    <button class="saveResultBtn">সেভ</button>
+                </div>
+                <div class="resultRow" data-slot="4">
+                    <label>গেম ৪ - Patti:</label><input type="text" class="pattiInput">
+                    <label>Single:</label><input type="text" class="singleInput">
+                    <button class="saveResultBtn">সেভ</button>
+                </div>
+                <div class="resultRow" data-slot="5">
+                    <label>গেম ৫ - Patti:</label><input type="text" class="pattiInput">
+                    <label>Single:</label><input type="text" class="singleInput">
+                    <button class="saveResultBtn">সেভ</button>
+                </div>
+                <div class="resultRow" data-slot="6">
+                    <label>গেম ৬ - Patti:</label><input type="text" class="pattiInput">
+                    <label>Single:</label><input type="text" class="singleInput">
+                    <button class="saveResultBtn">সেভ</button>
+                </div>
+                <div class="resultRow" data-slot="7">
+                    <label>গেম ৭ - Patti:</label><input type="text" class="pattiInput">
+                    <label>Single:</label><input type="text" class="singleInput">
+                    <button class="saveResultBtn">সেভ</button>
+                </div>
+                <div class="resultRow" data-slot="8">
+                    <label>গেম ৮ - Patti:</label><input type="text" class="pattiInput">
+                    <label>Single:</label><input type="text" class="singleInput">
+                    <button class="saveResultBtn">সেভ</button>
+                </div>
+            </div>
+        </section>
 
-    <section>
-        <h2>রেজাল্ট ঘোষণা</h2>
-        <label>গেম স্লট:</label>
-        <input type="number" id="resultGameSlot" min="1" max="8">
-        <label>জয়ী নাম্বার:</label>
-        <input type="number" id="winningNumber" min="0" max="9">
-        <button onclick="declareResult()">✅ রেজাল্ট ঘোষণা</button>
-    </section>
+        <section id="oldResults">
+            <h2>গত ১০ দিনের রেজাল্ট</h2>
+            <div id="oldResultsList"></div>
+        </section>
+    </main>
 
-    <section>
-        <h2>বেট রিপোর্ট ডাউনলোড</h2>
-        <button onclick="downloadReport()">📥 রিপোর্ট ডাউনলোড</button>
-    </section>
-
-    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-    <script src="js/firebase-config.js"></script>
-    <script src="js/admin.js"></script>
+    <script type="module" src="./js/admin.js"></script>
 </body>
 </html>
