@@ -1,9 +1,14 @@
-import { auth, db } from './firebase-config.js';
+// js/dealer.js
+
+// Firebase SDK এবং মডিউলগুলো ইম্পোর্ট করুন
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import {
+    getAuth,
     signOut,
     onAuthStateChanged
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 import {
+    getFirestore,
     doc,
     getDoc,
     updateDoc,
@@ -16,6 +21,12 @@ import {
     limit,
     serverTimestamp
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import { firebaseConfig } from './firebase-config.js';
+
+// Firebase অ্যাপ ইনিশিয়ালাইজ করুন
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
 
 let currentUser = null;
 let currentGameSlot = null;
@@ -48,7 +59,7 @@ function loadDealerBalance() {
     });
 }
 
-// বর্তমান গেম টাইম স্লট নির্ধারণ
+// বর্তমান গেম টাইম স্লট নির্ধারণ (দশটি নাম্বার বিবেচনায় নেওয়া হয়েছে)
 function loadCurrentGameSlot() {
     const times = [
         { label: "সকাল ১১টা", hour: 11, minute: 0 },
@@ -64,18 +75,18 @@ function loadCurrentGameSlot() {
     const now = new Date();
     for (let i = 0; i < times.length; i++) {
         let gameTime = new Date();
-        gameTime.setHours(times[i].hour);
-        gameTime.setMinutes(times[i].minute);
-        gameTime.setSeconds(0);
+        gameTime.setHours(times[i].hour, times[i].minute, 0, 0);
 
-        let diff = gameTime - now;
-        if (diff > 20 * 60 * 1000) { // ২০ মিনিট আগে বেট বন্ধ
+        let diff = gameTime.getTime() - now.getTime();
+        // কুড়ি মিনিট আগে বেট বন্ধ (20 * 60 * 1000 মিলিসেকেন্ড)
+        if (diff > 20 * 60 * 1000) { 
             currentGameSlot = i + 1;
             document.getElementById("currentGameTime").textContent = times[i].label;
             return;
         }
     }
-    document.getElementById("currentGameTime").textContent = "এই মুহূর্তে কোন বেটিং খোলা নেই";
+    document.getElementById("currentGameTime").textContent = "এই মুহূর্তে কোনো বেটিং খোলা নেই";
+    currentGameSlot = null;
 }
 
 // বেট প্লেস করা
@@ -87,6 +98,7 @@ window.placeBet = async function () {
         alert("❌ এখন বেটিং টাইম নয়");
         return;
     }
+    // ০-৯ নাম্বার যাচাই
     if (isNaN(number) || number < 0 || number > 9) {
         alert("❌ নাম্বার 0-9 এর মধ্যে দিন");
         return;
@@ -139,6 +151,7 @@ function loadBetHistory() {
         snapshot.forEach((docSnap) => {
             const data = docSnap.data();
             const li = document.createElement("li");
+            // গেমের সময় বা তারিখ ফরম্যাট করা যেতে পারে
             li.textContent = `গেম ${data.gameSlot} - নাম্বার ${data.number} - ${data.tokens} টোকেন`;
             list.appendChild(li);
         });
