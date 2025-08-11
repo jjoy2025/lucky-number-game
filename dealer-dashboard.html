@@ -1,38 +1,190 @@
 <!DOCTYPE html>
 <html lang="bn">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>The Lucky Number - Dealer Panel</title>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>ডিলার ড্যাশবোর্ড - The Lucky Number</title>
     <link rel="stylesheet" href="css/style.css">
+    <style>
+        /* ডিলার ড্যাশবোর্ডের জন্য আধুনিক স্টাইল */
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #f0f2f5;
+            color: #333;
+            margin: 0;
+            padding: 0;
+        }
+
+        header {
+            background: linear-gradient(to right, #2575fc, #6a11cb);
+            color: white;
+            padding: 1rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        header h1 {
+            margin: 0;
+            font-size: 1.5rem;
+        }
+
+        #logoutBtn {
+            background-color: #fff;
+            color: #2575fc;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        }
+
+        main {
+            padding: 1rem;
+        }
+        
+        .card {
+            background-color: #fff;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+            margin-bottom: 1.5rem;
+            padding: 1.5rem;
+        }
+
+        h2 {
+            font-size: 1.2rem;
+            border-bottom: 2px solid #ddd;
+            padding-bottom: 0.5rem;
+            margin-top: 0;
+        }
+        
+        .balance-info {
+            text-align: center;
+            padding: 1rem 0;
+        }
+        
+        .balance-info p {
+            margin: 0;
+            font-size: 1rem;
+            color: #666;
+        }
+        
+        .balance-info h3 {
+            font-size: 2.5rem;
+            color: #28a745;
+            margin: 0.5rem 0;
+            font-weight: bold;
+        }
+
+        /* বেট ফর্ম স্টাইল */
+        #bettingForm {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-top: 1rem;
+        }
+        
+        #bettingForm input {
+            padding: 12px;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            font-size: 1rem;
+        }
+        
+        #bettingForm button {
+            background-color: #2575fc;
+            color: white;
+            padding: 15px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1.1rem;
+            font-weight: bold;
+        }
+        
+        /* রেজাল্ট এবং ভাউচার স্টাইল */
+        #results-history .result-item, #winningVouchers .voucher-item {
+            background-color: #f9f9f9;
+            border-radius: 8px;
+            padding: 1rem;
+            margin-bottom: 10px;
+            border: 1px solid #eee;
+            position: relative;
+        }
+        
+        .voucher-item {
+            border-left: 5px solid #28a745;
+            background-color: #e8f5e9;
+        }
+        
+        .voucher-item h4 {
+            margin: 0;
+            font-size: 1.1rem;
+            color: #28a745;
+        }
+        
+        .voucher-item p {
+            margin: 5px 0 0;
+            font-size: 0.9rem;
+            color: #555;
+        }
+        
+        .voucher-item .winning-amount {
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: #28a745;
+            margin-top: 10px;
+        }
+    </style>
 </head>
 <body>
     <header>
-        <h1>🎯 The Lucky Number - Dealer Dashboard</h1>
-        <button onclick="logout()">Logout</button>
+        <h1>ডিলার ড্যাশবোর্ড</h1>
+        <button id="logoutBtn">লগআউট</button>
     </header>
 
-    <section id="dealerInfo">
-        <h2>স্বাগতম, <span id="dealerEmail"></span></h2>
-        <p>বর্তমান ব্যালেন্স: <span id="dealerBalance">0</span> টোকেন</p>
-    </section>
+    <main>
+        <div class="card">
+            <div class="balance-info">
+                <p>আপনার বর্তমান টোকেন ব্যালেন্স</p>
+                <h3 id="currentBalance">0</h3>
+            </div>
+            <div style="text-align:center; margin-top:1rem;">
+                <p style="font-size:1rem; font-weight:bold;">পরবর্তী খেলা: <span id="currentGameTime"></span></p>
+            </div>
+        </div>
 
-    <section id="betSection">
-        <h2>বেটিং সেকশন</h2>
-        <p>বর্তমান গেম টাইম: <span id="currentGameTime">লোড হচ্ছে...</span></p>
-        <label>নাম্বার (0-9):</label>
-        <input type="number" id="betNumber" min="0" max="9">
-        <label>টোকেন:</label>
-        <input type="number" id="betTokens" min="1">
-        <button onclick="placeBet()">🎲 বেট দিন</button>
-    </section>
+        <div class="card">
+            <h2>বেট করুন</h2>
+            <form id="bettingForm">
+                <input type="number" id="betNumber" placeholder="আপনার নাম্বার (0-9)" min="0" max="9" required>
+                <input type="number" id="betAmount" placeholder="টোকেন সংখ্যা" min="1" required>
+                <button type="submit">বেট সাবমিট করুন</button>
+            </form>
+        </div>
 
-    <section id="betHistory">
-        <h2>আপনার বেট হিস্ট্রি</h2>
-        <ul id="betList"></ul>
-    </section>
+        <div class="card">
+            <h2>উইনিং ভাউচার</h2>
+            <div id="winningVouchers">
+                <p style="color:#666;" id="noVouchersMessage">কোনো উইনিং ভাউচার নেই।</p>
+            </div>
+        </div>
+        
+        <div class="card">
+            <h2>আপনার বেটিং হিস্টরি</h2>
+            <div id="bettingHistory">
+                <p style="color:#666;" id="noHistoryMessage">এখনো কোনো বেটিং করা হয়নি।</p>
+            </div>
+        </div>
+    </main>
 
-    <!-- Firebase Scripts -->
+    <script type="module" src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js"></script>
+    <script type="module" src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js"></script>
+    <script type="module" src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js"></script>
+    
+    <script type="module" src="js/firebase-config.js"></script>
     <script type="module" src="js/dealer.js"></script>
 </body>
 </html>
