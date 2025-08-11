@@ -1,104 +1,145 @@
-firebase.initializeApp(firebaseConfig);
-const auth = firebase.auth();
-const db = firebase.firestore();
+// admin.js
 
+import { auth, db } from './firebase-config.js';
+import {
+    signOut,
+    onAuthStateChanged
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+import {
+    collection,
+    getDocs,
+    doc,
+    updateDoc,
+    addDoc,
+    query,
+    orderBy,
+    limit,
+    serverTimestamp
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+// এডমিন UID
 const ADMIN_UID = "dfAI8a7DfMRxgeymYJlGwuruxz63";
 
-auth.onAuthStateChanged(user => {
+// লগইন চেক
+onAuthStateChanged(auth, async (user) => {
     if (!user || user.uid !== ADMIN_UID) {
-        window.location.href = "index.html";
+        alert("আপনি এডমিন নন!");
+        window.location.href = "./index.html";
     } else {
         loadDealers();
-        loadBetGraph();
+        loadOldResults();
     }
 });
 
-function logout() {
-    auth.signOut().then(() => {
-        window.location.href = "index.html";
-    });
-}
+// লগআউট
+document.getElementById('logoutBtn').addEventListener('click', async () => {
+    await signOut(auth);
+    window.location.href = "./index.html";
+});
 
 // ডিলার লিস্ট লোড
-function loadDealers() {
-    db.collection("wallets").get().then(snapshot => {
-        const dealerDiv = document.getElementById("dealerList");
-        dealerDiv.innerHTML = "";
-        snapshot.forEach(doc => {
-            const data = doc.data();
-            const div = document.createElement("div");
-            div.innerHTML = `
-                <p><b>${data.email}</b> - ব্যালেন্স: ${data.balance || 0} টোকেন</p>
-                <input type="number" id="amount-${doc.id}" placeholder="টোকেন">
-                <button onclick="updateBalance('${doc.id}', true)">➕ ক্রেডিট</button>
-                <button onclick="updateBalance('${doc.id}', false)">➖ ডেবিট</button>
-                <hr>
-            `;
-            dealerDiv.appendChild(div);
-        });
+async function loadDealers() {
+    const dealerListEl = document.getElementById('dealerList');
+    dealerListEl.innerHTML = "";
+
+    const q = query(collection(db, "wallets"));
+    const snap = await getDocs(q);
+
+    snap.forEach(docSnap => {
+        const data = docSnap.data();
+        const tr = document.createElement('tr');
+
+        tr.innerHTML = `
+            <td>${data.email || 'N/A'}</td>
+            <td>${data.tokens || 0}</td>
+            <td><button onclick="creditTokens('${docSnap.id}')">+</button></td>
+            <td><button onclick="debitTokens('${docSnap.id}')">-</button></td>
+        `;
+        dealerListEl.appendChild(tr);
     });
 }
 
-// ব্যালেন্স আপডেট
-function updateBalance(uid, isCredit) {
-    const amount = parseInt(document.getElementById(`amount-${uid}`).value);
-    if (isNaN(amount) || amount <= 0) return alert("❌ সঠিক সংখ্যা দিন");
+// ক্রেডিট টোকেন
+window.creditTokens = async function (dealerId) {
+    const amount = parseInt(prompt("ক্রেডিট টোকেন সংখ্যা দিন:"));
+    if (isNaN(amount) || amount <= 0) return;
 
-    db.collection("wallets").doc(uid).update({
-        balance: firebase.firestore.FieldValue.increment(isCredit ? amount : -amount)
+    const ref = doc(db, "wallets", dealerId);
+    await updateDoc(ref, {
+        tokens: amount + (await getTokens(ref))
     });
+    loadDealers();
+};
+
+// ডেবিট টোকেন
+window.debitTokens = async function (dealerId) {
+    const amount = parseInt(prompt("ডেবিট টোকেন সংখ্যা দিন:"));
+    if (isNaN(amount) || amount <= 0) return;
+
+    const ref = doc(db, "wallets", dealerId);
+    await updateDoc(ref, {
+        tokens: Math.max((await getTokens(ref)) - amount, 0)
+    });
+    loadDealers();
+};
+
+// হেল্পার: টোকেন পড়া
+async function getTokens(ref) {
+    const snap = await getDocs(query(collection(db, "wallets")));
+    let tokens = 0;
+    snap.forEach(docSnap => {
+        if (docSnap.ref.path === ref.path) {
+            tokens = docSnap.data().tokens || 0;
+        }
+    });
+    return tokens;
 }
 
-// গ্রাফ লোড
-function loadBetGraph() {
-    db.collection("bets").get().then(snapshot => {
-        let counts = Array(10).fill(0);
-        snapshot.forEach(doc => {
-            const data = doc.data();
-            counts[data.number] += data.tokens;
+// রেজাল্ট সেভ
+document.querySelectorAll('.saveResultBtn').forEach(btn => {
+    btn.addEventListener('click', async () => {
+        const row = btn.closest('.resultRow');
+        const slot = row.getAttribute('data-slot');
+        const patti = row.querySelector('.pattiInput').value.trim();
+        const single = row.querySelector('.singleInput').value.trim();
+
+        if (!patti || !single) {
+            alert("দুটো ফিল্ডই পূর্ণ করতে হবে!");
+            return;
+        }
+
+        await addDoc(collection(db, "results"), {
+            slot,
+            patti,
+            single,
+            date: new Date().toLocaleDateString("en-GB"),
+            createdAt: serverTimestamp()
         });
 
-        const ctx = document.getElementById('betChart').getContext('2d');
-        new Chart(ctx, {
-            type: 'bar',
-            data: {
-                labels: Array.from({ length: 10 }, (_, i) => i.toString()),
-                datasets: [{
-                    label: 'টোকেন সংখ্যা',
-                    data: counts,
-                    backgroundColor: 'rgba(75, 192, 192, 0.7)'
-                }]
-            }
-        });
+        alert(`গেম ${slot} রেজাল্ট সেভ হয়েছে!`);
+        loadOldResults();
     });
-}
+});
 
-// রেজাল্ট ঘোষণা
-function declareResult() {
-    const slot = parseInt(document.getElementById("resultGameSlot").value);
-    const num = parseInt(document.getElementById("winningNumber").value);
-    if (isNaN(slot) || isNaN(num)) return alert("❌ সঠিক ডাটা দিন");
+// গত ১০ দিনের রেজাল্ট
+async function loadOldResults() {
+    const oldResultsEl = document.getElementById('oldResultsList');
+    oldResultsEl.innerHTML = "";
 
-    db.collection("results").add({
-        gameSlot: slot,
-        winningNumber: num,
-        timestamp: firebase.firestore.FieldValue.serverTimestamp()
-    }).then(() => {
-        alert("✅ রেজাল্ট ঘোষণা হয়েছে");
-    });
-}
+    const q = query(collection(db, "results"), orderBy("createdAt", "desc"), limit(80));
+    const snap = await getDocs(q);
 
-// রিপোর্ট ডাউনলোড
-function downloadReport() {
-    db.collection("bets").get().then(snapshot => {
-        let rows = [["Dealer Email", "Game Slot", "Number", "Tokens", "Time"]];
-        snapshot.forEach(doc => {
-            const d = doc.data();
-            rows.push([d.email, d.gameSlot, d.number, d.tokens, d.timestamp?.toDate()]);
-        });
-        const ws = XLSX.utils.aoa_to_sheet(rows);
-        const wb = XLSX.utils.book_new();
-        XLSX.utils.book_append_sheet(wb, ws, "Bets");
-        XLSX.writeFile(wb, "bets_report.xlsx");
+    let currentDate = "";
+    snap.forEach(docSnap => {
+        const data = docSnap.data();
+        if (data.date !== currentDate) {
+            currentDate = data.date;
+            const h3 = document.createElement('h3');
+            h3.textContent = currentDate;
+            oldResultsEl.appendChild(h3);
+        }
+        const p = document.createElement('p');
+        p.textContent = `গেম ${data.slot}: ${data.patti} - ${data.single}`;
+        oldResultsEl.appendChild(p);
     });
 }
