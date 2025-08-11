@@ -1,86 +1,104 @@
-// Firebase Init
 firebase.initializeApp(firebaseConfig);
 const auth = firebase.auth();
 const db = firebase.firestore();
 
-const adminUID = "dfAI8a7DfMRxgeymYJlGwuruxz63"; // আপনার এডমিন UID
+const ADMIN_UID = "dfAI8a7DfMRxgeymYJlGwuruxz63";
 
-// লগইন চেক
 auth.onAuthStateChanged(user => {
-    if (!user || user.uid !== adminUID) {
-        window.location.href = "index.html"; // লগইন পেজে ফেরত পাঠাবে
+    if (!user || user.uid !== ADMIN_UID) {
+        window.location.href = "index.html";
     } else {
-        document.getElementById("adminEmail").textContent = user.email;
-        loadTodayResults();
         loadDealers();
+        loadBetGraph();
     }
 });
 
-// লগআউট ফাংশন
 function logout() {
     auth.signOut().then(() => {
         window.location.href = "index.html";
     });
 }
 
-// আজকের রেজাল্ট লোড
-function loadTodayResults() {
-    const container = document.getElementById("resultsContainer");
-    container.innerHTML = "";
-
-    const times = [
-        "সকাল ১১টা", "দুপুর ১টা", "দুপুর আড়াইটে", "বিকেল ৩:৩০",
-        "বিকেল ৪:৩০", "সন্ধ্যা ৬টা", "সন্ধ্যা ৭:৩০", "রাত ৯টা"
-    ];
-
-    times.forEach((time, index) => {
-        const div = document.createElement("div");
-        div.classList.add("resultRow");
-        div.innerHTML = `
-            <label>${time}:</label>
-            <input type="number" min="0" max="9" id="result_${index}" placeholder="0-9">
-        `;
-        container.appendChild(div);
-    });
-}
-
-// রেজাল্ট সেভ
-function saveResults() {
-    const today = new Date().toISOString().split("T")[0]; // YYYY-MM-DD
-    const results = {};
-
-    for (let i = 0; i < 8; i++) {
-        const val = document.getElementById(`result_${i}`).value;
-        if (val === "" || val < 0 || val > 9) {
-            alert("সব রেজাল্ট 0-9 এর মধ্যে দিন");
-            return;
-        }
-        results[`game_${i + 1}`] = parseInt(val);
-    }
-
-    db.collection("results").doc(today).set({
-        date: today,
-        results: results,
-        timestamp: firebase.firestore.FieldValue.serverTimestamp()
-    }).then(() => {
-        alert("✅ আজকের রেজাল্ট সেভ হয়েছে");
-    }).catch(err => {
-        console.error(err);
-        alert("❌ রেজাল্ট সেভ ব্যর্থ");
-    });
-}
-
-// ডিলারের লিস্ট লোড
+// ডিলার লিস্ট লোড
 function loadDealers() {
-    const container = document.getElementById("dealersContainer");
-    container.innerHTML = "";
-
     db.collection("wallets").get().then(snapshot => {
+        const dealerDiv = document.getElementById("dealerList");
+        dealerDiv.innerHTML = "";
         snapshot.forEach(doc => {
             const data = doc.data();
-            const li = document.createElement("li");
-            li.textContent = `${data.email} - ব্যালেন্স: ${data.balance || 0} টোকেন`;
-            container.appendChild(li);
+            const div = document.createElement("div");
+            div.innerHTML = `
+                <p><b>${data.email}</b> - ব্যালেন্স: ${data.balance || 0} টোকেন</p>
+                <input type="number" id="amount-${doc.id}" placeholder="টোকেন">
+                <button onclick="updateBalance('${doc.id}', true)">➕ ক্রেডিট</button>
+                <button onclick="updateBalance('${doc.id}', false)">➖ ডেবিট</button>
+                <hr>
+            `;
+            dealerDiv.appendChild(div);
         });
+    });
+}
+
+// ব্যালেন্স আপডেট
+function updateBalance(uid, isCredit) {
+    const amount = parseInt(document.getElementById(`amount-${uid}`).value);
+    if (isNaN(amount) || amount <= 0) return alert("❌ সঠিক সংখ্যা দিন");
+
+    db.collection("wallets").doc(uid).update({
+        balance: firebase.firestore.FieldValue.increment(isCredit ? amount : -amount)
+    });
+}
+
+// গ্রাফ লোড
+function loadBetGraph() {
+    db.collection("bets").get().then(snapshot => {
+        let counts = Array(10).fill(0);
+        snapshot.forEach(doc => {
+            const data = doc.data();
+            counts[data.number] += data.tokens;
+        });
+
+        const ctx = document.getElementById('betChart').getContext('2d');
+        new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: Array.from({ length: 10 }, (_, i) => i.toString()),
+                datasets: [{
+                    label: 'টোকেন সংখ্যা',
+                    data: counts,
+                    backgroundColor: 'rgba(75, 192, 192, 0.7)'
+                }]
+            }
+        });
+    });
+}
+
+// রেজাল্ট ঘোষণা
+function declareResult() {
+    const slot = parseInt(document.getElementById("resultGameSlot").value);
+    const num = parseInt(document.getElementById("winningNumber").value);
+    if (isNaN(slot) || isNaN(num)) return alert("❌ সঠিক ডাটা দিন");
+
+    db.collection("results").add({
+        gameSlot: slot,
+        winningNumber: num,
+        timestamp: firebase.firestore.FieldValue.serverTimestamp()
+    }).then(() => {
+        alert("✅ রেজাল্ট ঘোষণা হয়েছে");
+    });
+}
+
+// রিপোর্ট ডাউনলোড
+function downloadReport() {
+    db.collection("bets").get().then(snapshot => {
+        let rows = [["Dealer Email", "Game Slot", "Number", "Tokens", "Time"]];
+        snapshot.forEach(doc => {
+            const d = doc.data();
+            rows.push([d.email, d.gameSlot, d.number, d.tokens, d.timestamp?.toDate()]);
+        });
+        const ws = XLSX.utils.aoa_to_sheet(rows);
+        const wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, "Bets");
+        XLSX.writeFile(wb, "bets_report.xlsx");
     });
 }
