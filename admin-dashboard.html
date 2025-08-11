@@ -3,10 +3,39 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>The Lucky Number - Admin Dashboard</title>
+    <title>The Lucky Number - Admin Panel</title>
+    <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
-    <h1>Welcome Admin</h1>
-    <p>আপনি এখন অ্যাডমিন ড্যাশবোর্ডে আছেন।</p>
+    <header>
+        <h1>🎯 The Lucky Number - Admin Dashboard</h1>
+        <button onclick="logout()">Logout</button>
+    </header>
+
+    <section id="adminInfo">
+        <h2>স্বাগতম, <span id="adminEmail"></span></h2>
+    </section>
+
+    <section id="todayResults">
+        <h2>আজকের রেজাল্ট</h2>
+        <div id="resultsContainer"></div>
+        <button onclick="saveResults()">💾 রেজাল্ট সেভ করুন</button>
+    </section>
+
+    <section id="dealersList">
+        <h2>ডিলার তালিকা</h2>
+        <ul id="dealersContainer"></ul>
+    </section>
+
+    <section id="reportSection">
+        <h2>📊 আজকের রিপোর্ট</h2>
+        <div id="reportContainer">এখনও কোন রিপোর্ট নেই</div>
+    </section>
+
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
+    <script src="js/firebase-config.js"></script>
+    <script src="js/admin.js"></script>
 </body>
 </html>
