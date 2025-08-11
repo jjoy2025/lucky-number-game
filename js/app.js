@@ -8,7 +8,7 @@ import {
     onAuthStateChanged 
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 import { getFirestore } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
-import { firebaseConfig } from './firebase-config.js'; // আপনার কনফিগারেশন ফাইল
+import { firebaseConfig } from './firebase-config.js'; // আপনার নতুন কনফিগারেশন ফাইল
 
 // Firebase অ্যাপ ইনিশিয়ালাইজ করুন
 const app = initializeApp(firebaseConfig);
