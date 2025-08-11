@@ -1,85 +1,234 @@
 <!DOCTYPE html>
 <html lang="bn">
 <head>
-    <meta charset="UTF-8">
-    <title>The Lucky Number - Admin Panel</title>
-    <link rel="stylesheet" href="./css/style.css">
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>এডমিন প্যানেল - The Lucky Number</title>
+    <link rel="stylesheet" href="css/style.css">
+    <style>
+        /* মোবাইল-বান্ধব এডমিন প্যানেলের জন্য স্টাইল */
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #f0f2f5;
+            color: #333;
+            margin: 0;
+            padding: 0;
+        }
+
+        header {
+            background: linear-gradient(to right, #6a11cb, #2575fc);
+            color: white;
+            padding: 1rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        header h1 {
+            margin: 0;
+            font-size: 1.5rem;
+        }
+
+        #logoutBtn {
+            background-color: #fff;
+            color: #6a11cb;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        }
+
+        main {
+            padding: 1rem;
+        }
+
+        section {
+            background-color: #fff;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+            margin-bottom: 1.5rem;
+            padding: 1.5rem;
+        }
+
+        h2 {
+            font-size: 1.2rem;
+            border-bottom: 2px solid #ddd;
+            padding-bottom: 0.5rem;
+            margin-top: 0;
+        }
+
+        /* ডিলার ম্যানেজমেন্ট স্টাইল */
+        #dealerListContainer {
+            overflow-x: auto;
+        }
+
+        #dealerList {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 1rem;
+        }
+
+        #dealerList th, #dealerList td {
+            padding: 10px;
+            border: 1px solid #ddd;
+            text-align: center;
+        }
+
+        #dealerList th {
+            background-color: #f2f2f2;
+            font-size: 0.9rem;
+        }
+
+        #dealerList button {
+            padding: 5px 10px;
+            cursor: pointer;
+            border: none;
+            border-radius: 5px;
+            font-size: 1rem;
+            font-weight: bold;
+        }
+
+        #dealerList button:first-of-type {
+            background-color: #28a745;
+            color: white;
+        }
+
+        #dealerList button:last-of-type {
+            background-color: #dc3545;
+            color: white;
+        }
+
+        /* রেজাল্ট আপডেট স্টাইল */
+        .resultRow {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            padding: 10px 0;
+            border-bottom: 1px solid #eee;
+        }
+
+        .resultRow:last-child {
+            border-bottom: none;
+        }
+
+        .resultRow label {
+            font-weight: bold;
+        }
+
+        .resultRow input {
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            width: 100%;
+            box-sizing: border-box;
+        }
+        
+        .resultRow button {
+            background-color: #007bff;
+            color: white;
+            padding: 10px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-top: 5px;
+            font-size: 1rem;
+        }
+    </style>
 </head>
 <body>
     <header>
-        <h1>The Lucky Number - Admin Panel</h1>
+        <h1>এডমিন প্যানেল</h1>
         <button id="logoutBtn">লগআউট</button>
     </header>
 
     <main>
-        <section id="dealerSection">
+        <section>
             <h2>ডিলার লিস্ট</h2>
-            <table>
-                <thead>
-                    <tr>
-                        <th>ডিলার ইমেইল</th>
-                        <th>টোকেন ব্যালেন্স</th>
-                        <th>ক্রেডিট</th>
-                        <th>ডেবিট</th>
-                    </tr>
-                </thead>
-                <tbody id="dealerList"></tbody>
-            </table>
+            <div id="dealerListContainer">
+                <table id="dealerList">
+                    <thead>
+                        <tr>
+                            <th>ইমেল</th>
+                            <th>টোকেন ব্যালেন্স</th>
+                            <th>ক্রেডিট</th>
+                            <th>ডেবিট</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        </tbody>
+                </table>
+            </div>
         </section>
 
-        <section id="resultSection">
+        <section>
             <h2>আজকের রেজাল্ট সেট করুন</h2>
-            <div id="todayResults">
-                <!-- ৮টি টাইম স্লট -->
+            <div class="resultRowsContainer">
                 <div class="resultRow" data-slot="1">
-                    <label>গেম ১ - Patti:</label><input type="text" class="pattiInput">
-                    <label>Single:</label><input type="text" class="singleInput">
+                    <label>গেম ১ (সকাল ১১টা)</label>
+                    <input type="text" class="pattiInput" placeholder="Patti Number" required>
+                    <input type="number" class="singleInput" placeholder="Single Number (0-9)" min="0" max="9" required>
                     <button class="saveResultBtn">সেভ</button>
                 </div>
                 <div class="resultRow" data-slot="2">
-                    <label>গেম ২ - Patti:</label><input type="text" class="pattiInput">
-                    <label>Single:</label><input type="text" class="singleInput">
+                    <label>গেম ২ (দুপুর ১টা)</label>
+                    <input type="text" class="pattiInput" placeholder="Patti Number" required>
+                    <input type="number" class="singleInput" placeholder="Single Number (0-9)" min="0" max="9" required>
                     <button class="saveResultBtn">সেভ</button>
                 </div>
                 <div class="resultRow" data-slot="3">
-                    <label>গেম ৩ - Patti:</label><input type="text" class="pattiInput">
-                    <label>Single:</label><input type="text" class="singleInput">
+                    <label>গেম ৩ (দুপুর আড়াইটে)</label>
+                    <input type="text" class="pattiInput" placeholder="Patti Number" required>
+                    <input type="number" class="singleInput" placeholder="Single Number (0-9)" min="0" max="9" required>
                     <button class="saveResultBtn">সেভ</button>
                 </div>
                 <div class="resultRow" data-slot="4">
-                    <label>গেম ৪ - Patti:</label><input type="text" class="pattiInput">
-                    <label>Single:</label><input type="text" class="singleInput">
+                    <label>গেম ৪ (বিকেল ৩:৩০)</label>
+                    <input type="text" class="pattiInput" placeholder="Patti Number" required>
+                    <input type="number" class="singleInput" placeholder="Single Number (0-9)" min="0" max="9" required>
                     <button class="saveResultBtn">সেভ</button>
                 </div>
                 <div class="resultRow" data-slot="5">
-                    <label>গেম ৫ - Patti:</label><input type="text" class="pattiInput">
-                    <label>Single:</label><input type="text" class="singleInput">
+                    <label>গেম ৫ (বিকেল ৪:৩০)</label>
+                    <input type="text" class="pattiInput" placeholder="Patti Number" required>
+                    <input type="number" class="singleInput" placeholder="Single Number (0-9)" min="0" max="9" required>
                     <button class="saveResultBtn">সেভ</button>
                 </div>
                 <div class="resultRow" data-slot="6">
-                    <label>গেম ৬ - Patti:</label><input type="text" class="pattiInput">
-                    <label>Single:</label><input type="text" class="singleInput">
+                    <label>গেম ৬ (সন্ধ্যা ৬টা)</label>
+                    <input type="text" class="pattiInput" placeholder="Patti Number" required>
+                    <input type="number" class="singleInput" placeholder="Single Number (0-9)" min="0" max="9" required>
                     <button class="saveResultBtn">সেভ</button>
                 </div>
                 <div class="resultRow" data-slot="7">
-                    <label>গেম ৭ - Patti:</label><input type="text" class="pattiInput">
-                    <label>Single:</label><input type="text" class="singleInput">
+                    <label>গেম ৭ (সন্ধ্যা ৭:৩০)</label>
+                    <input type="text" class="pattiInput" placeholder="Patti Number" required>
+                    <input type="number" class="singleInput" placeholder="Single Number (0-9)" min="0" max="9" required>
                     <button class="saveResultBtn">সেভ</button>
                 </div>
                 <div class="resultRow" data-slot="8">
-                    <label>গেম ৮ - Patti:</label><input type="text" class="pattiInput">
-                    <label>Single:</label><input type="text" class="singleInput">
+                    <label>গেম ৮ (রাত ৯টা)</label>
+                    <input type="text" class="pattiInput" placeholder="Patti Number" required>
+                    <input type="number" class="singleInput" placeholder="Single Number (0-9)" min="0" max="9" required>
                     <button class="saveResultBtn">সেভ</button>
                 </div>
             </div>
         </section>
 
-        <section id="oldResults">
+        <section>
             <h2>গত ১০ দিনের রেজাল্ট</h2>
-            <div id="oldResultsList"></div>
+            <div id="oldResultsList">
+                </div>
         </section>
     </main>
 
-    <script type="module" src="./js/admin.js"></script>
+    <script type="module" src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js"></script>
+    <script type="module" src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js"></script>
+    <script type="module" src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js"></script>
+    
+    <script type="module" src="js/firebase-config.js"></script>
+    <script type="module" src="js/admin.js"></script>
 </body>
 </html>
