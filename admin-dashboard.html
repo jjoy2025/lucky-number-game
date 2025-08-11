@@ -89,16 +89,41 @@
             border-radius: 5px;
             font-size: 1rem;
             font-weight: bold;
+            margin: 2px;
         }
 
-        #dealerList button:first-of-type {
+        .creditBtn {
             background-color: #28a745;
             color: white;
         }
 
-        #dealerList button:last-of-type {
+        .debitBtn {
             background-color: #dc3545;
             color: white;
+        }
+        
+        /* ডিলার অ্যাড ফর্ম স্টাইল */
+        #addDealerForm {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-top: 1rem;
+        }
+        
+        #addDealerForm input {
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+        
+        #addDealerForm button {
+            background-color: #007bff;
+            color: white;
+            padding: 12px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1rem;
         }
 
         /* রেজাল্ট আপডেট স্টাইল */
@@ -146,15 +171,19 @@
 
     <main>
         <section>
-            <h2>ডিলার লিস্ট</h2>
+            <h2>ডিলার ম্যানেজমেন্ট</h2>
+            <form id="addDealerForm">
+                <input type="email" id="dealerEmailInput" placeholder="ডিলারের ইমেল" required>
+                <input type="password" id="dealerPasswordInput" placeholder="পাসওয়ার্ড" required>
+                <button type="submit">ডিলার যোগ করুন</button>
+            </form>
             <div id="dealerListContainer">
                 <table id="dealerList">
                     <thead>
                         <tr>
                             <th>ইমেল</th>
                             <th>টোকেন ব্যালেন্স</th>
-                            <th>ক্রেডিট</th>
-                            <th>ডেবিট</th>
+                            <th colspan="2">টোকেন</th>
                         </tr>
                     </thead>
                     <tbody>
