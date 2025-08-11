@@ -113,10 +113,18 @@ if (dealerSearchInput) {
 
 // ক্রেডিট টোকেন ফাংশন
 document.getElementById('creditBtn').addEventListener('click', async () => {
+    // এখানে নতুন লজিক যোগ করা হয়েছে
     if (!selectedDealerId) {
-        alert("দয়া করে একজন ডিলার নির্বাচন করুন।");
-        return;
+        const dealerEmail = dealerSearchInput.value.toLowerCase();
+        const dealer = allDealers.find(d => d.email.toLowerCase() === dealerEmail);
+        if (dealer) {
+            selectedDealerId = dealer.id;
+        } else {
+            alert("দয়া করে একজন বৈধ ডিলার নির্বাচন করুন বা সঠিক ইমেল লিখুন।");
+            return;
+        }
     }
+
     const amount = parseInt(tokenAmountInput.value);
     if (isNaN(amount) || amount <= 0) {
         alert("সঠিক টোকেন সংখ্যা দিন।");
@@ -144,10 +152,18 @@ document.getElementById('creditBtn').addEventListener('click', async () => {
 
 // ডেবিট টোকেন ফাংশন
 document.getElementById('debitBtn').addEventListener('click', async () => {
+    // এখানে নতুন লজিক যোগ করা হয়েছে
     if (!selectedDealerId) {
-        alert("দয়া করে একজন ডিলার নির্বাচন করুন।");
-        return;
+        const dealerEmail = dealerSearchInput.value.toLowerCase();
+        const dealer = allDealers.find(d => d.email.toLowerCase() === dealerEmail);
+        if (dealer) {
+            selectedDealerId = dealer.id;
+        } else {
+            alert("দয়া করে একজন বৈধ ডিলার নির্বাচন করুন বা সঠিক ইমেল লিখুন।");
+            return;
+        }
     }
+
     const amount = parseInt(tokenAmountInput.value);
     if (isNaN(amount) || amount <= 0) {
         alert("সঠিক টোকেন সংখ্যা দিন।");
