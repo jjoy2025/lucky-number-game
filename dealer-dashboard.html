@@ -3,54 +3,39 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>The Lucky Number - Dealer Dashboard</title>
+    <title>The Lucky Number - Dealer Panel</title>
     <link rel="stylesheet" href="css/style.css">
-    <style>
-        body { text-align: center; background: #f5f5f5; }
-        .wallet { font-size: 20px; margin: 20px 0; }
-        .numbers { display: flex; justify-content: center; flex-wrap: wrap; gap: 10px; }
-        .number-btn {
-            width: 60px; height: 60px; font-size: 22px;
-            background: #007bff; color: white; border: none;
-            border-radius: 8px; cursor: pointer;
-        }
-        .number-btn:hover { background: #0056b3; }
-        .bet-box { margin-top: 20px; }
-        input { padding: 8px; width: 80px; text-align: center; }
-        button.place-bet {
-            background: green; color: white; padding: 10px 20px;
-            border: none; border-radius: 6px; cursor: pointer;
-            font-size: 16px;
-        }
-        button.place-bet:hover { background: darkgreen; }
-        #message { margin-top: 10px; font-size: 14px; }
-    </style>
 </head>
 <body>
+    <header>
+        <h1>🎯 The Lucky Number - Dealer Dashboard</h1>
+        <button onclick="logout()">Logout</button>
+    </header>
 
-    <h1>The Lucky Number</h1>
-    <div class="wallet">💰 ওয়ালেট: <span id="walletBalance">0</span> Token</div>
+    <section id="dealerInfo">
+        <h2>স্বাগতম, <span id="dealerEmail"></span></h2>
+        <p>বর্তমান ব্যালেন্স: <span id="dealerBalance">0</span> টোকেন</p>
+    </section>
 
-    <h3>একটি নাম্বার সিলেক্ট করুন</h3>
-    <div class="numbers" id="numberButtons"></div>
+    <section id="betSection">
+        <h2>বেটিং সেকশন</h2>
+        <p>বর্তমান গেম টাইম: <span id="currentGameTime">লোড হচ্ছে...</span></p>
+        <label>নাম্বার (0-9):</label>
+        <input type="number" id="betNumber" min="0" max="9">
+        <label>টোকেন:</label>
+        <input type="number" id="betTokens" min="1">
+        <button onclick="placeBet()">🎲 বেট দিন</button>
+    </section>
 
-    <div class="bet-box">
-        <input type="number" id="betAmount" placeholder="টোকেন" min="1">
-        <button class="place-bet" onclick="placeBet()">Place Bet</button>
-    </div>
+    <section id="betHistory">
+        <h2>আপনার বেট হিস্ট্রি</h2>
+        <ul id="betList"></ul>
+    </section>
 
-    <div id="message"></div>
-
-    <!-- Firebase SDK -->
-    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js"></script>
-
-    <!-- Firebase Config -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
     <script src="js/firebase-config.js"></script>
-
-    <!-- Dealer Script -->
     <script src="js/dealer.js"></script>
-
 </body>
 </html>
