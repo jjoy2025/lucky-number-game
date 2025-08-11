@@ -1,15 +1,19 @@
-// app.js
+// js/app.js
 
-// Firebase config লোড
-import { auth, db } from './firebase-config.js';
-import {
-    signInWithEmailAndPassword,
-    onAuthStateChanged
+// Firebase SDK এবং মডিউলগুলো ইম্পোর্ট করুন
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import { 
+    getAuth, 
+    signInWithEmailAndPassword, 
+    onAuthStateChanged 
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-import {
-    doc,
-    getDoc
-} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import { getFirestore } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import { firebaseConfig } from './firebase-config.js'; // আপনার কনফিগারেশন ফাইল
+
+// Firebase অ্যাপ ইনিশিয়ালাইজ করুন
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
 
 // এডমিন UID (লক করা)
 const ADMIN_UID = "dfAI8a7DfMRxgeymYJlGwuruxz63";
@@ -43,7 +47,7 @@ if (loginForm) {
 // যদি কেউ লগইন করা থাকে, সরাসরি রিডিরেক্ট হবে
 onAuthStateChanged(auth, async (user) => {
     if (user) {
-        if (window.location.pathname.endsWith("index.html") || window.location.pathname.endsWith("/")) {
+        if (window.location.pathname.endsWith("index-login.html") || window.location.pathname.endsWith("index.html") || window.location.pathname.endsWith("/")) {
             if (user.uid === ADMIN_UID) {
                 window.location.href = "./admin-dashboard.html";
             } else {
