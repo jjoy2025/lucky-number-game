@@ -1,11 +1,12 @@
 // js/firebase-config.js
 
-// Firebase configuration - The Lucky Number
+// Firebase configuration - The Lucky Number (Updated)
 export const firebaseConfig = {
-    apiKey: "AIzaSyBu7VZTJrU7EJbQyl41g7CFY7DqAcq7BG4",
-    authDomain: "lucky-number-game-2025.firebaseapp.com",
-    projectId: "lucky-number-game-2025",
-    storageBucket: "lucky-number-game-2025.appspot.com",
-    messagingSenderId: "636737807287",
-    appId: "1:636737807287:web:fa8d8af1e48f929b5b7a6a"
+  apiKey: "AIzaSyArpsy4tpySdQEEuZzIa0ZWpz5VzdN7i_I",
+  authDomain: "the-lucky-number-9f211.firebaseapp.com",
+  projectId: "the-lucky-number-9f211",
+  storageBucket: "the-lucky-number-9f211.firebasestorage.app",
+  messagingSenderId: "988704918151",
+  appId: "1:988704918151:web:870a814558135b3c37c622",
+  measurementId: "G-5LL375YSZT"
 };
