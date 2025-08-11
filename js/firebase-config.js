@@ -1,5 +1,7 @@
+// js/firebase-config.js
+
 // Firebase configuration - The Lucky Number
-const firebaseConfig = {
+export const firebaseConfig = {
     apiKey: "AIzaSyBu7VZTJrU7EJbQyl41g7CFY7DqAcq7BG4",
     authDomain: "lucky-number-game-2025.firebaseapp.com",
     projectId: "lucky-number-game-2025",
