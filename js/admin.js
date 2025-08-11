@@ -1,11 +1,14 @@
-// admin.js
+// js/admin.js
 
-import { auth, db } from './firebase-config.js';
-import {
-    signOut,
-    onAuthStateChanged
+// Firebase SDK এবং মডিউলগুলো ইম্পোর্ট করুন
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import { 
+    getAuth, 
+    signOut, 
+    onAuthStateChanged 
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 import {
+    getFirestore,
     collection,
     getDocs,
     doc,
@@ -14,8 +17,15 @@ import {
     query,
     orderBy,
     limit,
-    serverTimestamp
+    serverTimestamp,
+    getDoc
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import { firebaseConfig } from './firebase-config.js';
+
+// Firebase অ্যাপ ইনিশিয়ালাইজ করুন
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
 
 // এডমিন UID
 const ADMIN_UID = "dfAI8a7DfMRxgeymYJlGwuruxz63";
@@ -45,7 +55,7 @@ async function loadDealers() {
     const q = query(collection(db, "wallets"));
     const snap = await getDocs(q);
 
-    snap.forEach(docSnap => {
+    for (const docSnap of snap.docs) {
         const data = docSnap.data();
         const tr = document.createElement('tr');
 
@@ -56,7 +66,7 @@ async function loadDealers() {
             <td><button onclick="debitTokens('${docSnap.id}')">-</button></td>
         `;
         dealerListEl.appendChild(tr);
-    });
+    }
 }
 
 // ক্রেডিট টোকেন
@@ -65,10 +75,13 @@ window.creditTokens = async function (dealerId) {
     if (isNaN(amount) || amount <= 0) return;
 
     const ref = doc(db, "wallets", dealerId);
-    await updateDoc(ref, {
-        tokens: amount + (await getTokens(ref))
-    });
-    loadDealers();
+    const docSnap = await getDoc(ref);
+    if(docSnap.exists()){
+        await updateDoc(ref, {
+            tokens: (docSnap.data().tokens || 0) + amount
+        });
+        loadDealers();
+    }
 };
 
 // ডেবিট টোকেন
@@ -77,23 +90,14 @@ window.debitTokens = async function (dealerId) {
     if (isNaN(amount) || amount <= 0) return;
 
     const ref = doc(db, "wallets", dealerId);
-    await updateDoc(ref, {
-        tokens: Math.max((await getTokens(ref)) - amount, 0)
-    });
-    loadDealers();
+    const docSnap = await getDoc(ref);
+    if(docSnap.exists()){
+        await updateDoc(ref, {
+            tokens: Math.max((docSnap.data().tokens || 0) - amount, 0)
+        });
+        loadDealers();
+    }
 };
-
-// হেল্পার: টোকেন পড়া
-async function getTokens(ref) {
-    const snap = await getDocs(query(collection(db, "wallets")));
-    let tokens = 0;
-    snap.forEach(docSnap => {
-        if (docSnap.ref.path === ref.path) {
-            tokens = docSnap.data().tokens || 0;
-        }
-    });
-    return tokens;
-}
 
 // রেজাল্ট সেভ
 document.querySelectorAll('.saveResultBtn').forEach(btn => {
@@ -108,10 +112,16 @@ document.querySelectorAll('.saveResultBtn').forEach(btn => {
             return;
         }
 
+        // 0-9 নাম্বার যাচাই করা
+        if(single < '0' || single > '9' || single.length > 1) {
+            alert("সিঙ্গেল নাম্বারটি অবশ্যই 0-9 এর মধ্যে হতে হবে!");
+            return;
+        }
+
         await addDoc(collection(db, "results"), {
             slot,
             patti,
-            single,
+            single: parseInt(single),
             date: new Date().toLocaleDateString("en-GB"),
             createdAt: serverTimestamp()
         });
