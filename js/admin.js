@@ -5,7 +5,8 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/fireba
 import { 
     getAuth, 
     signOut, 
-    onAuthStateChanged 
+    onAuthStateChanged,
+    createUserWithEmailAndPassword 
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 import {
     getFirestore,
@@ -18,7 +19,8 @@ import {
     orderBy,
     limit,
     serverTimestamp,
-    getDoc
+    getDoc,
+    setDoc
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 import { firebaseConfig } from './firebase-config.js';
 
@@ -62,11 +64,19 @@ async function loadDealers() {
         tr.innerHTML = `
             <td>${data.email || 'N/A'}</td>
             <td>${data.tokens || 0}</td>
-            <td><button onclick="creditTokens('${docSnap.id}')">+</button></td>
-            <td><button onclick="debitTokens('${docSnap.id}')">-</button></td>
+            <td><button class="creditBtn" data-id="${docSnap.id}">+</button></td>
+            <td><button class="debitBtn" data-id="${docSnap.id}">-</button></td>
         `;
         dealerListEl.appendChild(tr);
     }
+    
+    // টোকেন ক্রেডিট/ডেবিট বাটনগুলোর জন্য ইভেন্ট লিসেনার
+    document.querySelectorAll('.creditBtn').forEach(button => {
+        button.addEventListener('click', (e) => creditTokens(e.target.dataset.id));
+    });
+    document.querySelectorAll('.debitBtn').forEach(button => {
+        button.addEventListener('click', (e) => debitTokens(e.target.dataset.id));
+    });
 }
 
 // ক্রেডিট টোকেন
@@ -80,6 +90,7 @@ window.creditTokens = async function (dealerId) {
         await updateDoc(ref, {
             tokens: (docSnap.data().tokens || 0) + amount
         });
+        alert(`ডিলারকে ${amount} টোকেন দেওয়া হয়েছে!`);
         loadDealers();
     }
 };
@@ -95,6 +106,7 @@ window.debitTokens = async function (dealerId) {
         await updateDoc(ref, {
             tokens: Math.max((docSnap.data().tokens || 0) - amount, 0)
         });
+        alert(`ডিলারের অ্যাকাউন্ট থেকে ${amount} টোকেন ডেবিট করা হয়েছে!`);
         loadDealers();
     }
 };
@@ -112,7 +124,6 @@ document.querySelectorAll('.saveResultBtn').forEach(btn => {
             return;
         }
 
-        // 0-9 নাম্বার যাচাই করা
         if(single < '0' || single > '9' || single.length > 1) {
             alert("সিঙ্গেল নাম্বারটি অবশ্যই 0-9 এর মধ্যে হতে হবে!");
             return;
