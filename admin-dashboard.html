@@ -5,36 +5,42 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>The Lucky Number - Admin Panel</title>
     <link rel="stylesheet" href="css/style.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
     <header>
-        <h1>🎯 The Lucky Number - Admin Dashboard</h1>
+        <h1>🎯 The Lucky Number - Admin Panel</h1>
         <button onclick="logout()">Logout</button>
     </header>
 
-    <section id="adminInfo">
-        <h2>স্বাগতম, <span id="adminEmail"></span></h2>
+    <section>
+        <h2>ডিলার ম্যানেজমেন্ট</h2>
+        <div id="dealerList"></div>
     </section>
 
-    <section id="todayResults">
-        <h2>আজকের রেজাল্ট</h2>
-        <div id="resultsContainer"></div>
-        <button onclick="saveResults()">💾 রেজাল্ট সেভ করুন</button>
+    <section>
+        <h2>আজকের বেটিং ডাটা (গ্রাফ)</h2>
+        <canvas id="betChart" width="400" height="200"></canvas>
     </section>
 
-    <section id="dealersList">
-        <h2>ডিলার তালিকা</h2>
-        <ul id="dealersContainer"></ul>
+    <section>
+        <h2>রেজাল্ট ঘোষণা</h2>
+        <label>গেম স্লট:</label>
+        <input type="number" id="resultGameSlot" min="1" max="8">
+        <label>জয়ী নাম্বার:</label>
+        <input type="number" id="winningNumber" min="0" max="9">
+        <button onclick="declareResult()">✅ রেজাল্ট ঘোষণা</button>
     </section>
 
-    <section id="reportSection">
-        <h2>📊 আজকের রিপোর্ট</h2>
-        <div id="reportContainer">এখনও কোন রিপোর্ট নেই</div>
+    <section>
+        <h2>বেট রিপোর্ট ডাউনলোড</h2>
+        <button onclick="downloadReport()">📥 রিপোর্ট ডাউনলোড</button>
     </section>
 
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <script src="js/firebase-config.js"></script>
     <script src="js/admin.js"></script>
 </body>
