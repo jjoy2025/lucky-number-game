@@ -59,6 +59,12 @@
             padding-bottom: 0.5rem;
             margin-top: 0;
         }
+        
+        h3 {
+            font-size: 1rem;
+            margin: 0.5rem 0;
+            color: #555;
+        }
 
         /* ডিলার ম্যানেজমেন্ট স্টাইল */
         #dealerListContainer {
@@ -161,6 +167,13 @@
             margin-top: 5px;
             font-size: 1rem;
         }
+
+        /* বেটিং গ্রাফ স্টাইল */
+        .chartContainer {
+            position: relative;
+            height: 250px; /* উচ্চতা নির্ধারণ করা হয়েছে */
+            margin-bottom: 1.5rem;
+        }
     </style>
 </head>
 <body>
@@ -245,11 +258,49 @@
                 </div>
             </div>
         </section>
+
+        <section>
+            <h2>আজকের বেটিং ডেটা</h2>
+            <div id="bettingGraphs">
+                <h3>গেম ১ (সকাল ১১টা)</h3>
+                <div class="chartContainer"><canvas id="chart-slot-1"></canvas></div>
+                
+                <h3>গেম ২ (দুপুর ১টা)</h3>
+                <div class="chartContainer"><canvas id="chart-slot-2"></canvas></div>
+
+                <h3>গেম ৩ (দুপুর আড়াইটে)</h3>
+                <div class="chartContainer"><canvas id="chart-slot-3"></canvas></div>
+
+                <h3>গেম ৪ (বিকেল ৩:৩০)</h3>
+                <div class="chartContainer"><canvas id="chart-slot-4"></canvas></div>
+
+                <h3>গেম ৫ (বিকেল ৪:৩০)</h3>
+                <div class="chartContainer"><canvas id="chart-slot-5"></canvas></div>
+
+                <h3>গেম ৬ (সন্ধ্যা ৬টা)</h3>
+                <div class="chartContainer"><canvas id="chart-slot-6"></canvas></div>
+                
+                <h3>গেম ৭ (সন্ধ্যা ৭:৩০)</h3>
+                <div class="chartContainer"><canvas id="chart-slot-7"></canvas></div>
+
+                <h3>গেম ৮ (রাত ৯টা)</h3>
+                <div class="chartContainer"><canvas id="chart-slot-8"></canvas></div>
+            </div>
+        </section>
+        
+        <section>
+            <h2>রিপোর্ট</h2>
+            <p>সম্পূর্ণ রিপোর্ট দেখার জন্য নিচে দেওয়া লিঙ্ক ব্যবহার করুন।</p>
+            <a href="reports.html" style="display:inline-block; padding:10px 15px; background:#007bff; color:white; text-decoration:none; border-radius:5px;">রিপোর্ট দেখুন</a>
+        </section>
+        
     </main>
 
     <script type="module" src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js"></script>
     <script type="module" src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js"></script>
     <script type="module" src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js"></script>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     
     <script type="module" src="js/firebase-config.js"></script>
     <script type="module" src="js/admin.js"></script>
