@@ -37,22 +37,23 @@
     </section>
   </main>
 
-  <!-- Firebase SDK (compat style) -->
-  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
+  <script type="module" src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js"></script>
+  <script type="module" src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js"></script>
+  
+  <script type="module" src="js/firebase-config.js"></script>
+  <script type="module" src="js/publicResults.js"></script>
 
-  <!-- Your firebase-config.js must already exist in js/firebase-config.js and contain firebaseConfig object -->
-  <script src="js/firebase-config.js"></script>
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+    import { getFirestore } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+    import { firebaseConfig } from './js/firebase-config.js';
+    
+    // Firebase অ্যাপ ইনিশিয়ালাইজ করুন
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
 
-  <!-- Initialize firebase for this page -->
-  <script>
-    // init firebase (uses firebaseConfig from js/firebase-config.js)
-    firebase.initializeApp(firebaseConfig);
-  </script>
+    import { initPublicResults } from './js/publicResults.js';
 
-  <!-- Public results script -->
-  <script src="js/publicResults.js"></script>
-  <script>
     document.addEventListener('DOMContentLoaded', () => {
       // initPublicResults expects container IDs 'todayResults', 'oldResults'
       initPublicResults('todayResults','oldResults');
