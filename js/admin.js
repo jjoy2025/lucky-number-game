@@ -41,7 +41,7 @@ onAuthStateChanged(auth, async (user) => {
         alert("আপনি এডমিন নন!");
         window.location.href = "./index.html";
     } else {
-        loadAllDealers();
+        await loadAllDealers();
         loadBettingGraphs();
     }
 });
@@ -78,7 +78,7 @@ if (dealerSearchInput) {
     dealerSearchInput.addEventListener('input', (e) => {
         const query = e.target.value.toLowerCase();
         dealerListDropdown.innerHTML = '';
-        selectedDealerId = null; // প্রতিবার ইনপুট পরিবর্তনের সময় নির্বাচন রিসেট করা
+        selectedDealerId = null; 
         currentDealerBalanceEl.textContent = '0';
         
         if (query.length > 0) {
@@ -113,7 +113,6 @@ if (dealerSearchInput) {
 
 // ক্রেডিট টোকেন ফাংশন
 document.getElementById('creditBtn').addEventListener('click', async () => {
-    // ডিলার নির্বাচনের জন্য নতুন লজিক
     let dealerIdToUpdate = selectedDealerId;
     if (!dealerIdToUpdate) {
         const dealerEmail = dealerSearchInput.value.trim();
@@ -138,14 +137,13 @@ document.getElementById('creditBtn').addEventListener('click', async () => {
             tokens: increment(amount)
         });
         
-        // UI আপডেট
         const currentBalance = parseInt(currentDealerBalanceEl.textContent);
         const newBalance = currentBalance + amount;
         currentDealerBalanceEl.textContent = newBalance;
         
         alert(`${amount} টোকেন সফলভাবে ক্রেডিট করা হয়েছে!`);
         tokenAmountInput.value = '';
-        loadAllDealers();
+        await loadAllDealers();
     } catch (error) {
         console.error("টোকেন ক্রেডিট করতে ব্যর্থ:", error);
         alert("টোকেন ক্রেডিট করতে ব্যর্থ।");
@@ -154,7 +152,6 @@ document.getElementById('creditBtn').addEventListener('click', async () => {
 
 // ডেবিট টোকেন ফাংশন
 document.getElementById('debitBtn').addEventListener('click', async () => {
-    // ডিলার নির্বাচনের জন্য নতুন লজিক
     let dealerIdToUpdate = selectedDealerId;
     if (!dealerIdToUpdate) {
         const dealerEmail = dealerSearchInput.value.trim();
@@ -185,13 +182,12 @@ document.getElementById('debitBtn').addEventListener('click', async () => {
             tokens: increment(-amount)
         });
         
-        // UI আপডেট
         const newBalance = currentBalance - amount;
         currentDealerBalanceEl.textContent = newBalance;
         
         alert(`${amount} টোকেন সফলভাবে ডেবিট করা হয়েছে!`);
         tokenAmountInput.value = '';
-        loadAllDealers();
+        await loadAllDealers();
     } catch (error) {
         console.error("টোকেন ডেবিট করতে ব্যর্থ:", error);
         alert("টোকেন ডেবিট করতে ব্যর্থ।");
