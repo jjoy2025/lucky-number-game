@@ -1,6 +1,5 @@
 // js/admin.js
 
-// Firebase SDK এবং মডিউলগুলো ইম্পোর্ট করুন
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import { 
     getAuth, 
@@ -18,10 +17,11 @@ import {
     query,
     where,
     orderBy,
-    limit,
     serverTimestamp,
     getDoc,
-    setDoc
+    setDoc,
+    increment,
+    deleteDoc
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 import { firebaseConfig } from './firebase-config.js';
 
@@ -48,8 +48,14 @@ onAuthStateChanged(auth, async (user) => {
 
 // লগআউট
 document.getElementById('logoutBtn').addEventListener('click', async () => {
-    await signOut(auth);
-    window.location.href = "./index.html";
+    try {
+        await signOut(auth);
+        alert("সফলভাবে লগআউট হয়েছে।");
+        window.location.href = "./index.html";
+    } catch (error) {
+        alert("লগআউট করতে ব্যর্থ: " + error.message);
+        console.error("লগআউট করতে ব্যর্থ:", error);
+    }
 });
 
 // সমস্ত ডিলার ডেটা লোড করা
@@ -72,6 +78,8 @@ if (dealerSearchInput) {
     dealerSearchInput.addEventListener('input', (e) => {
         const query = e.target.value.toLowerCase();
         dealerListDropdown.innerHTML = '';
+        selectedDealerId = null;
+        currentDealerBalanceEl.textContent = '0';
         
         if (query.length > 0) {
             const filteredDealers = allDealers.filter(dealer => dealer.email.toLowerCase().includes(query));
@@ -118,9 +126,14 @@ document.getElementById('creditBtn').addEventListener('click', async () => {
     try {
         const dealerDocRef = doc(db, "wallets", selectedDealerId);
         await updateDoc(dealerDocRef, {
-            tokens: currentDealerBalanceEl.textContent + amount
+            tokens: increment(amount)
         });
-        alert("টোকেন সফলভাবে ক্রেডিট করা হয়েছে!");
+        
+        // UI আপডেট
+        const newBalance = parseInt(currentDealerBalanceEl.textContent) + amount;
+        currentDealerBalanceEl.textContent = newBalance;
+        
+        alert(`${amount} টোকেন সফলভাবে ক্রেডিট করা হয়েছে!`);
         tokenAmountInput.value = '';
         loadAllDealers();
     } catch (error) {
@@ -150,9 +163,14 @@ document.getElementById('debitBtn').addEventListener('click', async () => {
         }
 
         await updateDoc(dealerDocRef, {
-            tokens: currentBalance - amount
+            tokens: increment(-amount)
         });
-        alert("টোকেন সফলভাবে ডেবিট করা হয়েছে!");
+        
+        // UI আপডেট
+        const newBalance = currentBalance - amount;
+        currentDealerBalanceEl.textContent = newBalance;
+        
+        alert(`${amount} টোকেন সফলভাবে ডেবিট করা হয়েছে!`);
         tokenAmountInput.value = '';
         loadAllDealers();
     } catch (error) {
@@ -214,13 +232,14 @@ document.querySelectorAll('.saveResultBtn').forEach(btn => {
             createdAt: serverTimestamp()
         });
 
-        alert(`গেম ${slot} রেজাল্ট সেভ হয়েছে!`);
+        alert(`গেম ${slot} রেজাল্ট সফলভাবে সেভ হয়েছে!`);
         loadBettingGraphs();
     });
 });
 
 // বেটিং গ্রাফ লোড করার ফাংশন
 async function loadBettingGraphs() {
+    // এই ফাংশন অপরিবর্তিত থাকবে
     const today = new Date().toLocaleDateString("en-GB");
     const gameSlots = [1, 2, 3, 4, 5, 6, 7, 8];
 
@@ -247,12 +266,10 @@ async function loadBettingGraphs() {
 
         const ctx = document.getElementById(`chart-slot-${slot}`);
         if (ctx) {
-            // যদি গ্রাফটি ইতিমধ্যেই বিদ্যমান থাকে, তাহলে আপডেট করা হবে
             if (window.myCharts && window.myCharts[`chart-slot-${slot}`]) {
                 window.myCharts[`chart-slot-${slot}`].data.datasets[0].data = Object.values(bettingData);
                 window.myCharts[`chart-slot-${slot}`].update();
             } else {
-                // নতুন গ্রাফ তৈরি করা হবে
                 const newChart = new Chart(ctx, {
                     type: 'bar',
                     data: {
