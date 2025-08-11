@@ -1,159 +1,232 @@
-// js/dealer.js
-
-// Firebase SDK এবং মডিউলগুলো ইম্পোর্ট করুন
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import {
-    getAuth,
-    signOut,
-    onAuthStateChanged
+  getAuth,
+  onAuthStateChanged,
+  signOut
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 import {
-    getFirestore,
-    doc,
-    getDoc,
-    updateDoc,
-    onSnapshot,
-    addDoc,
-    collection,
-    query,
-    where,
-    orderBy,
-    limit,
-    serverTimestamp
+  getFirestore,
+  doc,
+  getDoc,
+  setDoc,
+  collection,
+  query,
+  where,
+  getDocs,
+  orderBy
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
-import { firebaseConfig } from './firebase-config.js';
 
-// Firebase অ্যাপ ইনিশিয়ালাইজ করুন
-const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
-const db = getFirestore(app);
+const auth = getAuth();
+const db = getFirestore();
 
-let currentUser = null;
-let currentGameSlot = null;
+// গেমের সময়গুলো লোড করা
+const times = [{
+  hour: 11,
+  minute: 0,
+  label: "১১:০০ এ.এম."
+}, {
+  hour: 13,
+  minute: 0,
+  label: "০১:০০ পি.এম."
+}, {
+  hour: 15,
+  minute: 0,
+  label: "০৩:০০ পি.এম."
+}, {
+  hour: 17,
+  minute: 0,
+  label: "০৫:০০ পি.এম."
+}, {
+  hour: 19,
+  minute: 0,
+  label: "০৭:০০ পি.এম."
+}, {
+  hour: 21,
+  minute: 0,
+  label: "০৯:০০ পি.এম."
+}, ];
 
-// লগইন চেক
-onAuthStateChanged(auth, async (user) => {
-    if (!user) {
-        window.location.href = "index.html";
-    } else {
-        currentUser = user;
-        document.getElementById("dealerEmail").textContent = user.email;
-        loadDealerBalance();
-        loadCurrentGameSlot();
-        loadBetHistory();
+let currentGameSlot = -1;
+
+function loadCurrentGameSlot() {
+  const now = new Date();
+  let foundSlot = false;
+  for (let i = 0; i < times.length; i++) {
+    let gameTime = new Date();
+    gameTime.setHours(times[i].hour, times[i].minute, 0, 0);
+
+    let diff = gameTime.getTime() - now.getTime();
+    const twentyMinutes = 20 * 60 * 1000;
+
+    if (diff > twentyMinutes) {
+      currentGameSlot = i + 1;
+      document.getElementById("currentGameTime").textContent = times[i].label;
+      foundSlot = true;
+      break;
     }
+  }
+
+  if (!foundSlot) {
+    document.getElementById("currentGameTime").textContent = "আজকের খেলা শেষ";
+  }
+}
+
+// লগইন চেক করা
+onAuthStateChanged(auth, async (user) => {
+  if (user) {
+    console.log("ব্যবহারকারী লগইন করেছে:", user.email);
+    loadCurrentGameSlot();
+    fetchDealerData(user.uid);
+  } else {
+    console.log("কোনো ব্যবহারকারী লগইন করা নেই।");
+    window.location.href = "index.html";
+  }
 });
 
+// ডিলারের ডেটা, হিস্টরি এবং উইনিং ভাউচার লোড করা
+async function fetchDealerData(dealerId) {
+  try {
+    const dealerDocRef = doc(db, "dealers", dealerId);
+    const dealerDoc = await getDoc(dealerDocRef);
+
+    if (dealerDoc.exists()) {
+      const dealerData = dealerDoc.data();
+      document.getElementById("currentBalance").textContent = dealerData.balance;
+
+      // বেটিং হিস্টরি এবং উইনিং ভাউচার লোড করা
+      await fetchDealerBets(dealerId);
+    } else {
+      console.error("ডিলার ডেটা পাওয়া যায়নি!");
+    }
+  } catch (error) {
+    console.error("ডেটা আনার সময় ত্রুটি:", error);
+  }
+}
+
+// ডিলারের বেটগুলো নিয়ে আসা এবং উইনিং ভাউচার তৈরি করা
+async function fetchDealerBets(dealerId) {
+  try {
+    const betsCollectionRef = collection(db, "bets");
+    const q = query(betsCollectionRef, where("dealerId", "==", dealerId), orderBy("timestamp", "desc"));
+    const querySnapshot = await getDocs(q);
+
+    const bettingHistoryDiv = document.getElementById("bettingHistory");
+    const winningVouchersDiv = document.getElementById("winningVouchers");
+    bettingHistoryDiv.innerHTML = '';
+    winningVouchersDiv.innerHTML = '';
+
+    const hasWinningVouchers = false;
+    const hasBettingHistory = false;
+
+    for (const doc of querySnapshot.docs) {
+      const bet = doc.data();
+
+      // বেটিং হিস্টরি আইটেম তৈরি করা
+      const historyItem = document.createElement('div');
+      historyItem.classList.add('result-item');
+      historyItem.innerHTML = `
+                <p><strong>গেম স্লট:</strong> ${times[bet.gameSlot - 1].label}</p>
+                <p><strong>আপনার নাম্বার:</strong> ${bet.betNumber}</p>
+                <p><strong>টোকেন:</strong> ${bet.betAmount}</p>
+                <p><strong>সময়:</strong> ${new Date(bet.timestamp).toLocaleString('bn-BD')}</p>
+            `;
+      bettingHistoryDiv.appendChild(historyItem);
+      hasBettingHistory = true;
+
+      // উইনিং ভাউচার চেক করা
+      if (bet.winningNumber === bet.betNumber && bet.winningNumber !== null) {
+        const winningAmount = bet.betAmount * 9;
+        const voucherItem = document.createElement('div');
+        voucherItem.classList.add('voucher-item');
+        voucherItem.innerHTML = `
+                    <h4>উইনিং ভাউচার</h4>
+                    <p><strong>গেম:</strong> ${times[bet.gameSlot - 1].label}</p>
+                    <p><strong>জয়ী নাম্বার:</strong> ${bet.winningNumber}</p>
+                    <p><strong>আপনার বেট:</strong> ${bet.betNumber} (${bet.betAmount} টোকেন)</p>
+                    <div class="winning-amount">আপনি জিতেছেন: ${winningAmount} টোকেন</div>
+                `;
+        winningVouchersDiv.appendChild(voucherItem);
+        hasWinningVouchers = true;
+      }
+    }
+
+    if (!hasBettingHistory) {
+      document.getElementById("noHistoryMessage").style.display = 'block';
+    } else {
+      document.getElementById("noHistoryMessage").style.display = 'none';
+    }
+
+    if (!hasWinningVouchers) {
+      document.getElementById("noVouchersMessage").style.display = 'block';
+    } else {
+      document.getElementById("noVouchersMessage").style.display = 'none';
+    }
+
+  } catch (error) {
+    console.error("বেট আনার সময় ত্রুটি:", error);
+  }
+}
+
+// বেট জমা দেওয়ার ফর্ম
+document.getElementById("bettingForm").addEventListener("submit", async (e) => {
+  e.preventDefault();
+
+  const betNumber = parseInt(document.getElementById("betNumber").value);
+  const betAmount = parseInt(document.getElementById("betAmount").value);
+  const user = auth.currentUser;
+
+  if (!user || currentGameSlot === -1) {
+    alert("বেট গ্রহণ করার জন্য এখন কোনো খেলা নেই।");
+    return;
+  }
+
+  if (betNumber < 0 || betNumber > 9 || betAmount <= 0) {
+    alert("দয়া করে সঠিক তথ্য দিন।");
+    return;
+  }
+
+  try {
+    const dealerDocRef = doc(db, "dealers", user.uid);
+    const dealerDoc = await getDoc(dealerDocRef);
+    const currentBalance = dealerDoc.data().balance;
+
+    if (currentBalance < betAmount) {
+      alert("আপনার অ্যাকাউন্টে পর্যাপ্ত টোকেন নেই।");
+      return;
+    }
+
+    // নতুন বেট যোগ করা
+    const newBetRef = doc(collection(db, "bets"));
+    await setDoc(newBetRef, {
+      dealerId: user.uid,
+      gameSlot: currentGameSlot,
+      betNumber: betNumber,
+      betAmount: betAmount,
+      winningNumber: null, // ডিফল্ট হিসেবে null
+      timestamp: new Date().getTime(),
+    });
+
+    // ব্যালেন্স আপডেট করা
+    await setDoc(dealerDocRef, {
+      balance: currentBalance - betAmount
+    }, {
+      merge: true
+    });
+
+    alert("আপনার বেট সফলভাবে জমা দেওয়া হয়েছে!");
+    document.getElementById("bettingForm").reset();
+    fetchDealerData(user.uid); // ডেটা রিফ্রেশ করা
+  } catch (error) {
+    console.error("বেট জমা দেওয়ার সময় ত্রুটি:", error);
+    alert("বেট জমা দেওয়ার সময় একটি সমস্যা হয়েছে।");
+  }
+});
+
+
 // লগআউট
-window.logout = async function () {
-    await signOut(auth);
+document.getElementById("logoutBtn").addEventListener("click", () => {
+  signOut(auth).then(() => {
     window.location.href = "index.html";
-};
-
-// ব্যালেন্স লোড
-function loadDealerBalance() {
-    onSnapshot(doc(db, "wallets", currentUser.uid), (docSnap) => {
-        if (docSnap.exists()) {
-            document.getElementById("dealerBalance").textContent = docSnap.data().tokens || 0;
-        }
-    });
-}
-
-// বর্তমান গেম টাইম স্লট নির্ধারণ (দশটি নাম্বার বিবেচনায় নেওয়া হয়েছে)
-function loadCurrentGameSlot() {
-    const times = [
-        { label: "সকাল ১১টা", hour: 11, minute: 0 },
-        { label: "দুপুর ১টা", hour: 13, minute: 0 },
-        { label: "দুপুর আড়াইটে", hour: 14, minute: 30 },
-        { label: "বিকেল ৩:৩০", hour: 15, minute: 30 },
-        { label: "বিকেল ৪:৩০", hour: 16, minute: 30 },
-        { label: "সন্ধ্যা ৬টা", hour: 18, minute: 0 },
-        { label: "সন্ধ্যা ৭:৩০", hour: 19, minute: 30 },
-        { label: "রাত ৯টা", hour: 21, minute: 0 }
-    ];
-
-    const now = new Date();
-    for (let i = 0; i < times.length; i++) {
-        let gameTime = new Date();
-        gameTime.setHours(times[i].hour, times[i].minute, 0, 0);
-
-        let diff = gameTime.getTime() - now.getTime();
-        // কুড়ি মিনিট আগে বেট বন্ধ (20 * 60 * 1000 মিলিসেকেন্ড)
-        if (diff > 20 * 60 * 1000) { 
-            currentGameSlot = i + 1;
-            document.getElementById("currentGameTime").textContent = times[i].label;
-            return;
-        }
-    }
-    document.getElementById("currentGameTime").textContent = "এই মুহূর্তে কোনো বেটিং খোলা নেই";
-    currentGameSlot = null;
-}
-
-// বেট প্লেস করা
-window.placeBet = async function () {
-    const number = parseInt(document.getElementById("betNumber").value);
-    const tokens = parseInt(document.getElementById("betTokens").value);
-
-    if (!currentGameSlot) {
-        alert("❌ এখন বেটিং টাইম নয়");
-        return;
-    }
-    // ০-৯ নাম্বার যাচাই
-    if (isNaN(number) || number < 0 || number > 9) {
-        alert("❌ নাম্বার 0-9 এর মধ্যে দিন");
-        return;
-    }
-    if (isNaN(tokens) || tokens <= 0) {
-        alert("❌ টোকেনের সংখ্যা সঠিকভাবে দিন");
-        return;
-    }
-
-    const walletRef = doc(db, "wallets", currentUser.uid);
-    const walletSnap = await getDoc(walletRef);
-
-    if (!walletSnap.exists() || (walletSnap.data().tokens || 0) < tokens) {
-        alert("❌ পর্যাপ্ত টোকেন নেই");
-        return;
-    }
-
-    // বেট সেভ
-    await addDoc(collection(db, "bets"), {
-        userId: currentUser.uid,
-        email: currentUser.email,
-        gameSlot: currentGameSlot,
-        number: number,
-        tokens: tokens,
-        timestamp: serverTimestamp()
-    });
-
-    // ব্যালেন্স আপডেট
-    await updateDoc(walletRef, {
-        tokens: (walletSnap.data().tokens || 0) - tokens
-    });
-
-    alert("✅ বেট দেওয়া হয়েছে");
-    document.getElementById("betNumber").value = "";
-    document.getElementById("betTokens").value = "";
-};
-
-// নিজের বেট হিস্ট্রি লোড
-function loadBetHistory() {
-    const q = query(
-        collection(db, "bets"),
-        where("userId", "==", currentUser.uid),
-        orderBy("timestamp", "desc"),
-        limit(20)
-    );
-
-    onSnapshot(q, (snapshot) => {
-        const list = document.getElementById("betList");
-        list.innerHTML = "";
-        snapshot.forEach((docSnap) => {
-            const data = docSnap.data();
-            const li = document.createElement("li");
-            // গেমের সময় বা তারিখ ফরম্যাট করা যেতে পারে
-            li.textContent = `গেম ${data.gameSlot} - নাম্বার ${data.number} - ${data.tokens} টোকেন`;
-            list.appendChild(li);
-        });
-    });
-}
+  }).catch((error) => {
+    console.error("লগআউট করতে ব্যর্থ:", error);
+  });
+});
