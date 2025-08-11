@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>রিপোর্ট - The Lucky Number</title>
+    <link rel="stylesheet" href="css/style.css">
+    <style>
+        /* রিপোর্টের জন্য স্টাইল */
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #f0f2f5;
+            color: #333;
+            margin: 0;
+            padding: 0;
+        }
+
+        header {
+            background: linear-gradient(to right, #6a11cb, #2575fc);
+            color: white;
+            padding: 1rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        header h1 {
+            margin: 0;
+            font-size: 1.5rem;
+        }
+
+        .back-link {
+            text-decoration: none;
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            border: 1px solid white;
+            font-weight: bold;
+        }
+
+        main {
+            padding: 1rem;
+        }
+
+        section {
+            background-color: #fff;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+            margin-bottom: 1.5rem;
+            padding: 1.5rem;
+        }
+
+        h2 {
+            font-size: 1.2rem;
+            border-bottom: 2px solid #ddd;
+            padding-bottom: 0.5rem;
+            margin-top: 0;
+        }
+        
+        .report-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 1rem;
+        }
+        
+        .report-table th, .report-table td {
+            padding: 10px;
+            border: 1px solid #ddd;
+            text-align: center;
+            font-size: 0.9rem;
+        }
+        
+        .report-table th {
+            background-color: #e9ecef;
+        }
+        
+        #dealerDetailedReport {
+            margin-top: 1rem;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>রিপোর্ট</h1>
+        <a href="admin-dashboard.html" class="back-link">ফিরে যান</a>
+    </header>
+
+    <main>
+        <section>
+            <h2>ডিলারদের রিপোর্ট</h2>
+            <div id="dealerSummaryTableContainer" style="overflow-x:auto;">
+                <table id="dealerSummaryTable" class="report-table">
+                    <thead>
+                        <tr>
+                            <th>ইমেল</th>
+                            <th>বর্তমান টোকেন</th>
+                            <th>মোট উইনিং (আনুমানিক)</th>
+                            <th>বিস্তারিত</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        </tbody>
+                </table>
+            </div>
+        </section>
+        
+        <section id="dealerDetailedReport" style="display:none;">
+            <h2><span id="detailedReportTitle"></span> এর বিস্তারিত রিপোর্ট</h2>
+            <div style="overflow-x:auto;">
+                <table id="bettingHistoryTable" class="report-table">
+                    <thead>
+                        <tr>
+                            <th>তারিখ</th>
+                            <th>গেম</th>
+                            <th>নাম্বার</th>
+                            <th>টোকেন</th>
+                            <th>রেজাল্ট</th>
+                            <th>স্ট্যাটাস</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        </tbody>
+                </table>
+            </div>
+        </section>
+    </main>
+
+    <script type="module" src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js"></script>
+    <script type="module" src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js"></script>
+    <script type="module" src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js"></script>
+    
+    <script type="module" src="js/firebase-config.js"></script>
+    <script type="module" src="js/reports.js"></script>
+</body>
+</html>
