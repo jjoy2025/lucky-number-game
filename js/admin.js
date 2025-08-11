@@ -218,7 +218,8 @@ if (addDealerForm) {
 
             alert(`ডিলার ${email} সফলভাবে যোগ করা হয়েছে!`);
             addDealerForm.reset();
-            loadAllDealers();
+            // নতুন ডিলার যুক্ত হওয়ার পর, ডিলার লিস্ট পুনরায় লোড করা
+            await loadAllDealers();
         } catch (error) {
             alert("ডিলার যোগ করতে ব্যর্থ: " + error.message);
         }
