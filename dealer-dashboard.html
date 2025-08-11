@@ -4,9 +4,53 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>The Lucky Number - Dealer Dashboard</title>
+    <link rel="stylesheet" href="css/style.css">
+    <style>
+        body { text-align: center; background: #f5f5f5; }
+        .wallet { font-size: 20px; margin: 20px 0; }
+        .numbers { display: flex; justify-content: center; flex-wrap: wrap; gap: 10px; }
+        .number-btn {
+            width: 60px; height: 60px; font-size: 22px;
+            background: #007bff; color: white; border: none;
+            border-radius: 8px; cursor: pointer;
+        }
+        .number-btn:hover { background: #0056b3; }
+        .bet-box { margin-top: 20px; }
+        input { padding: 8px; width: 80px; text-align: center; }
+        button.place-bet {
+            background: green; color: white; padding: 10px 20px;
+            border: none; border-radius: 6px; cursor: pointer;
+            font-size: 16px;
+        }
+        button.place-bet:hover { background: darkgreen; }
+        #message { margin-top: 10px; font-size: 14px; }
+    </style>
 </head>
 <body>
-    <h1>Welcome Dealer</h1>
-    <p>আপনি এখন ডিলার ড্যাশবোর্ডে আছেন।</p>
+
+    <h1>The Lucky Number</h1>
+    <div class="wallet">💰 ওয়ালেট: <span id="walletBalance">0</span> Token</div>
+
+    <h3>একটি নাম্বার সিলেক্ট করুন</h3>
+    <div class="numbers" id="numberButtons"></div>
+
+    <div class="bet-box">
+        <input type="number" id="betAmount" placeholder="টোকেন" min="1">
+        <button class="place-bet" onclick="placeBet()">Place Bet</button>
+    </div>
+
+    <div id="message"></div>
+
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js"></script>
+
+    <!-- Firebase Config -->
+    <script src="js/firebase-config.js"></script>
+
+    <!-- Dealer Script -->
+    <script src="js/dealer.js"></script>
+
 </body>
 </html>
