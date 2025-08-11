@@ -52,7 +52,7 @@ document.getElementById('logoutBtn').addEventListener('click', async () => {
 
 // ডিলার লিস্ট লোড
 async function loadDealers() {
-    const dealerListEl = document.getElementById('dealerList');
+    const dealerListEl = document.getElementById('dealerList').querySelector('tbody');
     dealerListEl.innerHTML = "";
 
     const q = query(collection(db, "wallets"));
@@ -165,7 +165,6 @@ document.querySelectorAll('.saveResultBtn').forEach(btn => {
         });
 
         alert(`গেম ${slot} রেজাল্ট সেভ হয়েছে!`);
-        // রেজাল্ট সেভ করার পর গ্রাফ লোড করা যেতে পারে
         loadBettingGraphs();
     });
 });
