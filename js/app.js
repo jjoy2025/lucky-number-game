@@ -1,20 +1,15 @@
-// Initialize Firebase
+// Firebase Init
 firebase.initializeApp(firebaseConfig);
 const auth = firebase.auth();
-const db = firebase.firestore();
-
-// Admin UID (Fixed)
-const ADMIN_UID = "dfAI8a7DfMRxgeymYJlGwuruxz63";
 
 // Login Function
-function login() {
+function loginUser() {
     const email = document.getElementById("email").value.trim();
     const password = document.getElementById("password").value.trim();
-    const errorMsg = document.getElementById("errorMsg");
-    errorMsg.innerText = "";
+    const messageEl = document.getElementById("message");
 
     if (!email || !password) {
-        errorMsg.innerText = "⚠️ Email এবং Password দিন";
+        messageEl.textContent = "⚠️ ইমেইল এবং পাসওয়ার্ড দিন";
         return;
     }
 
@@ -22,22 +17,26 @@ function login() {
         .then(userCredential => {
             const user = userCredential.user;
 
-            if (user.uid === ADMIN_UID) {
+            // Admin UID
+            const adminUID = "dfAI8a7DfMRxgeymYJlGwuruxz63";
+
+            if (user.uid === adminUID) {
                 window.location.href = "admin-dashboard.html";
             } else {
                 window.location.href = "dealer-dashboard.html";
             }
         })
         .catch(error => {
-            console.error("Login error:", error);
-            errorMsg.innerText = "❌ " + error.message;
+            console.error(error);
+            messageEl.textContent = "❌ লগইন ব্যর্থ: " + error.message;
         });
 }
 
 // Auto Redirect if already logged in
 auth.onAuthStateChanged(user => {
     if (user) {
-        if (user.uid === ADMIN_UID) {
+        const adminUID = "dfAI8a7DfMRxgeymYJlGwuruxz63";
+        if (user.uid === adminUID) {
             window.location.href = "admin-dashboard.html";
         } else {
             window.location.href = "dealer-dashboard.html";
