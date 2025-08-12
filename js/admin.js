@@ -22,34 +22,51 @@ import {
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 import { firebaseConfig, ADMIN_UID } from './firebase-config.js';
 
+// Firebase অ্যাপ ইনিশিয়ালাইজ
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
 
+// সমস্ত ডিলার এবং নির্বাচিত ডিলার ট্র্যাক করার জন্য ভেরিয়েবল
 let allDealers = [];
 let selectedDealer = null; 
 
+// HTML উপাদানগুলো নির্বাচন
+const dealerSearchInput = document.getElementById('dealerSearchInput');
+const dealerListDropdown = document.getElementById('dealerListDropdown');
+const currentDealerBalanceEl = document.getElementById('currentDealerBalance');
+const tokenAmountInput = document.getElementById('tokenAmountInput');
+const logoutBtn = document.getElementById('logoutBtn');
+const creditBtn = document.getElementById('creditBtn');
+const debitBtn = document.getElementById('debitBtn');
+const addDealerForm = document.getElementById('addDealerForm');
+
+// এডমিন লগইন চেক এবং ডেটা লোড করা
 onAuthStateChanged(auth, (user) => {
     if (!user || user.uid !== ADMIN_UID) {
         alert("আপনি এডমিন নন!");
         window.location.href = "./index.html";
     } else {
-        loadAllDealersRealTime(); 
+        loadAllDealersRealTime();
         loadBettingGraphs();
     }
 });
 
-document.getElementById('logoutBtn').addEventListener('click', async () => {
-    try {
-        await signOut(auth);
-        alert("সফলভাবে লগআউট হয়েছে।");
-        window.location.href = "./index.html";
-    } catch (error) {
-        alert("লগআউট করতে ব্যর্থ: " + error.message);
-        console.error("লগআউট করতে ব্যর্থ:", error);
-    }
-});
+// লগআউট ফাংশন
+if (logoutBtn) {
+    logoutBtn.addEventListener('click', async () => {
+        try {
+            await signOut(auth);
+            alert("সফলভাবে লগআউট হয়েছে।");
+            window.location.href = "./index.html";
+        } catch (error) {
+            alert("লগআউট করতে ব্যর্থ: " + error.message);
+            console.error("লগআউট করতে ব্যর্থ:", error);
+        }
+    });
+}
 
+// সমস্ত ডিলার রিয়েল-টাইমে লোড
 function loadAllDealersRealTime() {
     const q = query(collection(db, "wallets"));
     onSnapshot(q, (snapshot) => {
@@ -57,20 +74,17 @@ function loadAllDealersRealTime() {
             id: doc.id,
             ...doc.data()
         }));
+        // যদি কোনো ডিলার আগে থেকে নির্বাচিত থাকে, তবে তার ব্যালেন্স রিয়েল-টাইমে আপডেট করা হবে
         if (selectedDealer) {
             const updatedDealer = allDealers.find(d => d.id === selectedDealer.id);
             if (updatedDealer) {
-                currentDealerBalanceEl.textContent = updatedDealer.balance;
+                currentDealerBalanceEl.textContent = updatedDealer.tokens || 0;
             }
         }
     });
 }
 
-const dealerSearchInput = document.getElementById('dealerSearchInput');
-const dealerListDropdown = document.getElementById('dealerListDropdown');
-const currentDealerBalanceEl = document.getElementById('currentDealerBalance');
-const tokenAmountInput = document.getElementById('tokenAmountInput');
-
+// ডিলার সার্চ এবং অটোকমপ্লিট
 if (dealerSearchInput) {
     dealerSearchInput.addEventListener('input', (e) => {
         const query = e.target.value.toLowerCase();
@@ -89,7 +103,7 @@ if (dealerSearchInput) {
                     li.addEventListener('click', () => {
                         selectedDealer = dealer;
                         dealerSearchInput.value = dealer.email;
-                        currentDealerBalanceEl.textContent = dealer.balance;
+                        currentDealerBalanceEl.textContent = dealer.tokens || 0;
                         dealerListDropdown.style.display = 'none';
                     });
                     dealerListDropdown.appendChild(li);
@@ -110,76 +124,82 @@ if (dealerSearchInput) {
     });
 }
 
-document.getElementById('creditBtn').addEventListener('click', async () => {
-    let dealerToUpdate = selectedDealer;
-    if (!dealerToUpdate) {
-        const dealerEmail = dealerSearchInput.value.trim().toLowerCase();
-        dealerToUpdate = allDealers.find(d => d.email && d.email.toLowerCase() === dealerEmail);
-    }
+// ক্রেডিট টোকেন ফাংশন
+if (creditBtn) {
+    creditBtn.addEventListener('click', async () => {
+        let dealerToUpdate = selectedDealer;
+        if (!dealerToUpdate) {
+            const dealerEmail = dealerSearchInput.value.trim().toLowerCase();
+            dealerToUpdate = allDealers.find(d => d.email && d.email.toLowerCase() === dealerEmail);
+        }
 
-    if (!dealerToUpdate) {
-        alert("দয়া করে একজন বৈধ ডিলার নির্বাচন করুন বা সঠিক ইমেল লিখুন।");
-        return;
-    }
+        if (!dealerToUpdate) {
+            alert("দয়া করে একজন বৈধ ডিলার নির্বাচন করুন অথবা সঠিক ইমেল লিখুন।");
+            return;
+        }
 
-    const amount = parseInt(tokenAmountInput.value);
-    if (isNaN(amount) || amount <= 0) {
-        alert("সঠিক টোকেন সংখ্যা দিন।");
-        return;
-    }
+        const amount = parseInt(tokenAmountInput.value);
+        if (isNaN(amount) || amount <= 0) {
+            alert("সঠিক টোকেন সংখ্যা দিন।");
+            return;
+        }
 
-    try {
-        await updateDoc(doc(db, "wallets", dealerToUpdate.id), {
-            balance: increment(amount)
-        });
-        alert(`${amount} টোকেন সফলভাবে ক্রেডিট করা হয়েছে!`);
-        tokenAmountInput.value = '';
-        dealerSearchInput.value = '';
-        selectedDealer = null;
-    } catch (error) {
-        console.error("টোকেন ক্রেডিট করতে ব্যর্থ:", error);
-        alert("টোকেন ক্রেডিট করতে ব্যর্থ।");
-    }
-});
+        try {
+            await updateDoc(doc(db, "wallets", dealerToUpdate.id), {
+                tokens: increment(amount)
+            });
+            alert(`${amount} টোকেন সফলভাবে ক্রেডিট করা হয়েছে!`);
+            tokenAmountInput.value = '';
+            dealerSearchInput.value = '';
+            selectedDealer = null;
+        } catch (error) {
+            console.error("টোকেন ক্রেডিট করতে ব্যর্থ:", error);
+            alert("টোকেন ক্রেডিট করতে ব্যর্থ।");
+        }
+    });
+}
 
-document.getElementById('debitBtn').addEventListener('click', async () => {
-    let dealerToUpdate = selectedDealer;
-    if (!dealerToUpdate) {
-        const dealerEmail = dealerSearchInput.value.trim().toLowerCase();
-        dealerToUpdate = allDealers.find(d => d.email && d.email.toLowerCase() === dealerEmail);
-    }
+// ডেবিট টোকেন ফাংশন
+if (debitBtn) {
+    debitBtn.addEventListener('click', async () => {
+        let dealerToUpdate = selectedDealer;
+        if (!dealerToUpdate) {
+            const dealerEmail = dealerSearchInput.value.trim().toLowerCase();
+            dealerToUpdate = allDealers.find(d => d.email && d.email.toLowerCase() === dealerEmail);
+        }
 
-    if (!dealerToUpdate) {
-        alert("দয়া করে একজন বৈধ ডিলার নির্বাচন করুন বা সঠিক ইমেল লিখুন।");
-        return;
-    }
+        if (!dealerToUpdate) {
+            alert("দয়া করে একজন বৈধ ডিলার নির্বাচন করুন অথবা সঠিক ইমেল লিখুন।");
+            return;
+        }
 
-    const amount = parseInt(tokenAmountInput.value);
-    if (isNaN(amount) || amount <= 0) {
-        alert("সঠিক টোকেন সংখ্যা দিন।");
-        return;
-    }
+        const amount = parseInt(tokenAmountInput.value);
+        if (isNaN(amount) || amount <= 0) {
+            alert("সঠিক টোকেন সংখ্যা দিন।");
+            return;
+        }
 
-    if (dealerToUpdate.balance < amount) {
-        alert("ডিলারের অ্যাকাউন্টে পর্যাপ্ত টোকেন নেই।");
-        return;
-    }
+        if (dealerToUpdate.tokens < amount) {
+            alert("ডিলারের অ্যাকাউন্টে পর্যাপ্ত টোকেন নেই।");
+            return;
+        }
 
-    try {
-        await updateDoc(doc(db, "wallets", dealerToUpdate.id), {
-            balance: increment(-amount)
-        });
-        alert(`${amount} টোকেন সফলভাবে ডেবিট করা হয়েছে!`);
-        tokenAmountInput.value = '';
-        dealerSearchInput.value = '';
-        selectedDealer = null;
-    } catch (error) {
-        console.error("টোকেন ডেবিট করতে ব্যর্থ:", error);
-        alert("টোকেন ডেবিট করতে ব্যর্থ।");
-    }
-});
+        try {
+            await updateDoc(doc(db, "wallets", dealerToUpdate.id), {
+                tokens: increment(-amount)
+            });
+            alert(`${amount} টোকেন সফলভাবে ডেবিট করা হয়েছে!`);
+            tokenAmountInput.value = '';
+            dealerSearchInput.value = '';
+            selectedDealer = null;
+        } catch (error) {
+            console.error("টোকেন ডেবিট করতে ব্যর্থ:", error);
+            alert("টোকেন ডেবিট করতে ব্যর্থ।");
+        }
+    });
+}
 
-const addDealerForm = document.getElementById('addDealerForm');
+// নতুন ডিলার অ্যাড
 if (addDealerForm) {
     addDealerForm.addEventListener('submit', async (e) => {
         e.preventDefault();
@@ -192,7 +212,7 @@ if (addDealerForm) {
 
             await setDoc(doc(db, "wallets", userId), {
                 email: email,
-                balance: 0,
+                tokens: 0,
                 createdAt: serverTimestamp()
             });
 
@@ -204,6 +224,7 @@ if (addDealerForm) {
     });
 }
 
+// রেজাল্ট সেভ
 document.querySelectorAll('.saveResultBtn').forEach(btn => {
     btn.addEventListener('click', async () => {
         const row = btn.closest('.resultRow');
@@ -225,7 +246,6 @@ document.querySelectorAll('.saveResultBtn').forEach(btn => {
             slot,
             patti,
             single: parseInt(single),
-            date: new Date().toLocaleDateString("en-GB"),
             createdAt: serverTimestamp()
         });
 
@@ -234,6 +254,7 @@ document.querySelectorAll('.saveResultBtn').forEach(btn => {
     });
 });
 
+// বেটিং গ্রাফ লোড
 async function loadBettingGraphs() {
     const gameSlots = [1, 2, 3, 4, 5, 6, 7, 8];
 
