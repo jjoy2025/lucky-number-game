@@ -110,3 +110,61 @@ exports.archiveTodayResultsDryRun = functions.pubsub
       throw err;
     }
   });
+  
+/**
+ * processTokenTransaction
+ * - Triggers when a new document is added to the 'transactions' collection.
+ * - Updates the user's wallet balance securely.
+ */
+exports.processTokenTransaction = functions.firestore
+    .document('transactions/{transactionId}')
+    .onCreate(async (snapshot, context) => {
+        const transaction = snapshot.data();
+
+        if (transaction.status !== 'pending') {
+            return null;
+        }
+
+        const userId = transaction.userId;
+        const amount = transaction.amount;
+        const type = transaction.type;
+
+        const walletRef = db.collection('wallets').doc(userId);
+
+        try {
+            await db.runTransaction(async (t) => {
+                const walletDoc = await t.get(walletRef);
+                
+                if (!walletDoc.exists) {
+                    throw new Error("Wallet document does not exist!");
+                }
+
+                const currentBalance = walletDoc.data().tokens || 0;
+                let newBalance;
+
+                if (type === 'credit') {
+                    newBalance = currentBalance + amount;
+                } else if (type === 'debit') {
+                    if (currentBalance < amount) {
+                        throw new Error("Insufficient tokens for debit!");
+                    }
+                    newBalance = currentBalance - amount;
+                } else {
+                    throw new Error("Invalid transaction type!");
+                }
+                
+                t.update(walletRef, { tokens: newBalance });
+                
+                t.update(snapshot.ref, { status: 'processed', processedAt: admin.firestore.FieldValue.serverTimestamp() });
+            });
+            
+            console.log(`Transaction ${context.params.transactionId} processed successfully.`);
+            return null;
+            
+        } catch (e) {
+            console.error(`Error processing transaction ${context.params.transactionId}:`, e);
+            await snapshot.ref.update({ status: 'failed', error: e.message, processedAt: admin.firestore.FieldValue.serverTimestamp() });
+            return null;
+        }
+    });
+
