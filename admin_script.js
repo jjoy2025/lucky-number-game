@@ -1,3 +1,4 @@
+// আপনার Firebase কনফিগারেশন
 const firebaseConfig = {
     apiKey: "AIzaSyArpsy4tpySdQEEuZzIa0ZWpz5VzdN7i_I",
     authDomain: "the-lucky-number-9f211.firebaseapp.com",
@@ -24,12 +25,10 @@ const resultFormsDiv = document.getElementById('result-forms');
 // Firebase Authentication অবস্থা নিরীক্ষণ করুন
 auth.onAuthStateChanged((user) => {
     if (user) {
-        // ব্যবহারকারী লগইন করা আছে
         loginSection.style.display = 'none';
         resultFormsContainer.style.display = 'block';
         loadResultForms();
     } else {
-        // ব্যবহারকারী লগআউট করা আছে
         loginSection.style.display = 'block';
         resultFormsContainer.style.display = 'none';
     }
@@ -43,7 +42,7 @@ authForm.addEventListener('submit', (e) => {
 
     auth.signInWithEmailAndPassword(email, password)
         .then((userCredential) => {
-            // সাইন ইন সফল হয়েছে
+            // সাইন ইন সফল
         })
         .catch((error) => {
             errorMessage.textContent = error.message;
@@ -92,7 +91,6 @@ function loadResultForms() {
                 const patty = document.getElementById(`patty-${i}`).value;
                 const single = document.getElementById(`single-${i}`).value;
 
-                // ডেটা সেভ করা
                 todayRef.child(i).set({
                     patty: patty,
                     single: single
