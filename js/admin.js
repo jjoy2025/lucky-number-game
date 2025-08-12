@@ -22,16 +22,13 @@ import {
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 import { firebaseConfig, ADMIN_UID } from './firebase-config.js';
 
-// Firebase অ্যাপ ইনিশিয়ালাইজ
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
 
-// সমস্ত ডিলার এবং নির্বাচিত ডিলার ট্র্যাক করার জন্য ভেরিয়েবল
 let allDealers = [];
 let selectedDealer = null; 
 
-// HTML উপাদানগুলো নির্বাচন
 const dealerSearchInput = document.getElementById('dealerSearchInput');
 const dealerListDropdown = document.getElementById('dealerListDropdown');
 const currentDealerBalanceEl = document.getElementById('currentDealerBalance');
@@ -41,7 +38,6 @@ const creditBtn = document.getElementById('creditBtn');
 const debitBtn = document.getElementById('debitBtn');
 const addDealerForm = document.getElementById('addDealerForm');
 
-// এডমিন লগইন চেক এবং ডেটা লোড করা
 onAuthStateChanged(auth, (user) => {
     if (!user || user.uid !== ADMIN_UID) {
         alert("আপনি এডমিন নন!");
@@ -52,7 +48,6 @@ onAuthStateChanged(auth, (user) => {
     }
 });
 
-// লগআউট ফাংশন
 if (logoutBtn) {
     logoutBtn.addEventListener('click', async () => {
         try {
@@ -66,7 +61,6 @@ if (logoutBtn) {
     });
 }
 
-// সমস্ত ডিলার রিয়েল-টাইমে লোড
 function loadAllDealersRealTime() {
     const q = query(collection(db, "wallets"));
     onSnapshot(q, (snapshot) => {
@@ -74,7 +68,6 @@ function loadAllDealersRealTime() {
             id: doc.id,
             ...doc.data()
         }));
-        // যদি কোনো ডিলার আগে থেকে নির্বাচিত থাকে, তবে তার ব্যালেন্স রিয়েল-টাইমে আপডেট করা হবে
         if (selectedDealer) {
             const updatedDealer = allDealers.find(d => d.id === selectedDealer.id);
             if (updatedDealer) {
@@ -84,7 +77,6 @@ function loadAllDealersRealTime() {
     });
 }
 
-// ডিলার সার্চ এবং অটোকমপ্লিট
 if (dealerSearchInput) {
     dealerSearchInput.addEventListener('input', (e) => {
         const query = e.target.value.toLowerCase();
@@ -124,7 +116,6 @@ if (dealerSearchInput) {
     });
 }
 
-// ক্রেডিট টোকেন ফাংশন (পরিবর্তিত)
 if (creditBtn) {
     creditBtn.addEventListener('click', async () => {
         let dealerToUpdate = selectedDealer;
@@ -145,15 +136,10 @@ if (creditBtn) {
         }
 
         try {
-            await addDoc(collection(db, "transactions"), {
-                userId: dealerToUpdate.id,
-                amount: amount,
-                type: 'credit',
-                adminId: auth.currentUser.uid,
-                status: 'pending',
-                createdAt: serverTimestamp()
+            await updateDoc(doc(db, "wallets", dealerToUpdate.id), {
+                tokens: increment(amount)
             });
-            alert(`${amount} টোকেন ক্রেডিট করার অনুরোধ পাঠানো হয়েছে!`);
+            alert(`${amount} টোকেন সফলভাবে ক্রেডিট করা হয়েছে!`);
             tokenAmountInput.value = '';
             dealerSearchInput.value = '';
             selectedDealer = null;
@@ -164,7 +150,6 @@ if (creditBtn) {
     });
 }
 
-// ডেবিট টোকেন ফাংশন (পরিবর্তিত)
 if (debitBtn) {
     debitBtn.addEventListener('click', async () => {
         let dealerToUpdate = selectedDealer;
@@ -184,21 +169,16 @@ if (debitBtn) {
             return;
         }
 
-        if (dealerToUpdate.tokens < amount) {
+        if ((dealerToUpdate.tokens || 0) < amount) {
             alert("ডিলারের অ্যাকাউন্টে পর্যাপ্ত টোকেন নেই।");
             return;
         }
 
         try {
-            await addDoc(collection(db, "transactions"), {
-                userId: dealerToUpdate.id,
-                amount: amount,
-                type: 'debit',
-                adminId: auth.currentUser.uid,
-                status: 'pending',
-                createdAt: serverTimestamp()
+            await updateDoc(doc(db, "wallets", dealerToUpdate.id), {
+                tokens: increment(-amount)
             });
-            alert(`${amount} টোকেন ডেবিট করার অনুরোধ পাঠানো হয়েছে!`);
+            alert(`${amount} টোকেন সফলভাবে ডেবিট করা হয়েছে!`);
             tokenAmountInput.value = '';
             dealerSearchInput.value = '';
             selectedDealer = null;
@@ -209,7 +189,6 @@ if (debitBtn) {
     });
 }
 
-// নতুন ডিলার অ্যাড
 if (addDealerForm) {
     addDealerForm.addEventListener('submit', async (e) => {
         e.preventDefault();
@@ -234,7 +213,6 @@ if (addDealerForm) {
     });
 }
 
-// রেজাল্ট সেভ
 document.querySelectorAll('.saveResultBtn').forEach(btn => {
     btn.addEventListener('click', async () => {
         const row = btn.closest('.resultRow');
@@ -264,9 +242,8 @@ document.querySelectorAll('.saveResultBtn').forEach(btn => {
     });
 });
 
-// বেটিং গ্রাফ লোড
 async function loadBettingGraphs() {
-    const gameSlots = [1, 2, 3, 4, 5, 6, 7, 8];
+    const gameSlots = [1, 2, 3, 4, 5, 6, 7, 8};
 
     for (const slot of gameSlots) {
         const q = query(collection(db, "bets"), where("gameSlot", "==", slot));
