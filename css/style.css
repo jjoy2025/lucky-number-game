@@ -1,192 +1,91 @@
-/* ===== রিসেট ===== */
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
+body {
+    font-family: Arial, sans-serif;
+    background-color: #f0f2f5;
+    margin: 0;
+    padding: 0;
+    color: #333;
 }
 
-body {
-  font-family: "Noto Sans Bengali", sans-serif;
-  background: #f4f6f8;
-  color: #333;
-  line-height: 1.5;
+.container {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 20px;
 }
 
 header {
-  background: linear-gradient(90deg, #1d2671, #c33764);
-  color: white;
-  padding: 15px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
+    text-align: center;
+    background-color: #fff;
+    padding: 20px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
 }
 
 header h1 {
-  font-size: 1.6rem;
+    margin: 0;
+    color: #4a4a4a;
+    font-size: 2.5em;
 }
 
-header button {
-  background: #ff9800;
-  border: none;
-  padding: 8px 15px;
-  border-radius: 6px;
-  cursor: pointer;
-  color: white;
-  font-weight: bold;
+section {
+    background-color: #fff;
+    padding: 20px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
 }
 
-header button:hover {
-  background: #e68900;
+h2 {
+    text-align: center;
+    color: #007bff;
+    border-bottom: 2px solid #007bff;
+    padding-bottom: 10px;
+    margin-bottom: 20px;
 }
 
-main {
-  padding: 20px;
+.results-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+    gap: 10px;
 }
 
-/* ===== রেজাল্ট সেকশন ===== */
-#results {
-  background: white;
-  padding: 15px;
-  border-radius: 8px;
-  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-  margin-bottom: 20px;
+.result-box {
+    background-color: #f8f9fa;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    text-align: center;
+    padding: 10px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
 }
 
-#results h2 {
-  margin-bottom: 10px;
-  border-bottom: 2px solid #eee;
-  padding-bottom: 5px;
+.result-box .patty {
+    font-size: 1.2em;
+    font-weight: bold;
+    color: #4a4a4a;
+    border-bottom: 1px solid #ccc;
+    padding-bottom: 5px;
+    margin-bottom: 5px;
 }
 
-/* ===== নাম্বার প্যাড ===== */
-.numberPad {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(60px, 1fr));
-  gap: 10px;
-  margin: 15px 0;
+.result-box .single {
+    font-size: 2em;
+    font-weight: bold;
+    color: #007bff;
 }
 
-.numberBtn {
-  background: #4cafef;
-  color: white;
-  font-size: 1.4rem;
-  padding: 15px;
-  border-radius: 8px;
-  border: none;
-  cursor: pointer;
-  transition: all 0.2s ease-in-out;
+.loading {
+    background-color: #e9ecef;
+    color: #6c757d;
 }
 
-.numberBtn:hover {
-  background: #388ac8;
-}
-
-/* ===== ওয়ালেট ===== */
-#wallet {
-  font-size: 1.2rem;
-  background: #fff3cd;
-  padding: 8px 12px;
-  border-radius: 6px;
-  margin-bottom: 15px;
-  display: inline-block;
-}
-
-/* ===== বেট হিস্ট্রি ===== */
-#betHistory {
-  background: white;
-  padding: 10px;
-  border-radius: 8px;
-  box-shadow: 0 1px 4px rgba(0,0,0,0.1);
-}
-
-.bet-entry {
-  display: flex;
-  justify-content: space-between;
-  padding: 5px 0;
-  border-bottom: 1px solid #eee;
-}
-
-.bet-entry:last-child {
-  border-bottom: none;
-}
-
-/* ===== অ্যাডমিন প্যানেল ===== */
-.admin-panel {
-  background: #e3f2fd;
-  padding: 15px;
-  border-radius: 8px;
-  margin-top: 20px;
-  border-left: 5px solid #2196f3;
-}
-
-.admin-actions {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
-}
-
-.admin-actions button {
-  background: #2196f3;
-  color: white;
-  border: none;
-  padding: 10px 14px;
-  border-radius: 6px;
-  cursor: pointer;
-}
-
-.admin-actions button:hover {
-  background: #1976d2;
-}
-
-/* ===== টেবিল ===== */
-table {
-  width: 100%;
-  border-collapse: collapse;
-  background: white;
-  border-radius: 8px;
-  overflow: hidden;
-  margin-top: 15px;
-}
-
-table th, table td {
-  padding: 10px;
-  text-align: center;
-  border-bottom: 1px solid #eee;
-}
-
-table th {
-  background: #f5f5f5;
-}
-
-table tr:hover {
-  background: #f9f9f9;
-}
-
-/* ===== CSV বাটন ===== */
-#downloadCSV {
-  margin-top: 10px;
-  padding: 8px 14px;
-  background: #4caf50;
-  border: none;
-  border-radius: 6px;
-  color: white;
-  cursor: pointer;
-}
-
-#downloadCSV:hover {
-  background: #388e3c;
-}
-
-/* ===== মোবাইল রেসপনসিভ ===== */
-@media (max-width: 600px) {
-  header h1 {
-    font-size: 1.2rem;
-  }
-  .numberBtn {
-    font-size: 1.1rem;
-    padding: 12px;
-  }
-  #wallet {
-    font-size: 1rem;
-  }
+.old-results-date {
+    background-color: #e9ecef;
+    padding: 10px;
+    border-radius: 6px;
+    margin-bottom: 15px;
+    text-align: center;
+    font-weight: bold;
+    color: #4a4a4a;
 }
