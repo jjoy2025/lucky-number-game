@@ -1,5 +1,3 @@
-// js/dealer.js
-
 import {
   initializeApp
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
@@ -119,12 +117,14 @@ async function fetchDealerBets(dealerId) {
     const betsCollectionRef = collection(db, "bets");
     const q = query(betsCollectionRef, where("userId", "==", dealerId), orderBy("timestamp", "desc"));
     const querySnapshot = await getDocs(q);
+
+    // সব রেজাল্ট একসাথে লোড করুন
     const resultsSnapshot = await getDocs(collection(db, "results"));
     const results = {};
     resultsSnapshot.forEach(doc => {
       const data = doc.data();
-      const date = new Date(data.createdAt.toDate()).toLocaleDateString("en-GB");
-      const key = `${date}_${data.slot}`;
+      // রেজাল্ট ডেটার date এবং slot ব্যবহার করে একটি key তৈরি করুন
+      const key = `${data.date}_${data.slot}`;
       results[key] = data;
     });
 
