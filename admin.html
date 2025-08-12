@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>এডমিন প্যানেল</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        .admin-container {
+            max-width: 600px;
+            margin: 50px auto;
+            padding: 20px;
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+        .admin-container h2 {
+            text-align: center;
+            color: #007bff;
+        }
+        .auth-form input, .result-form input, .result-form button {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 15px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+        .auth-form button, .result-form button {
+            background-color: #007bff;
+            color: #fff;
+            border: none;
+            cursor: pointer;
+            font-size: 1em;
+        }
+        .auth-form button:hover, .result-form button:hover {
+            background-color: #0056b3;
+        }
+        .result-form label {
+            font-weight: bold;
+            margin-bottom: 5px;
+            display: block;
+        }
+        #result-forms-container {
+            display: none;
+        }
+        .result-form {
+            background-color: #f8f9fa;
+            padding: 15px;
+            border-radius: 6px;
+            margin-bottom: 15px;
+            border: 1px solid #eee;
+        }
+        .logout-btn {
+            background-color: #dc3545;
+            color: #fff;
+            border: none;
+            padding: 10px;
+            cursor: pointer;
+            border-radius: 4px;
+            float: right;
+        }
+        .logout-btn:hover {
+            background-color: #c82333;
+        }
+    </style>
+    <script src="https://www.gstatic.com/firebasejs/8.6.8/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.6.8/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.6.8/firebase-database.js"></script>
+</head>
+<body>
+    <div class="admin-container">
+        <div id="login-section">
+            <h2>এডমিন লগইন</h2>
+            <form id="auth-form" class="auth-form">
+                <input type="email" id="email" placeholder="ইমেল" required>
+                <input type="password" id="password" placeholder="পাসওয়ার্ড" required>
+                <button type="submit">লগইন করুন</button>
+                <p id="error-message" style="color: red; text-align: center;"></p>
+            </form>
+        </div>
+
+        <div id="result-forms-container">
+            <button id="logout-button" class="logout-btn">লগআউট</button>
+            <h2>রেজাল্ট আপডেট করুন</h2>
+            <div id="result-forms">
+                </div>
+        </div>
+    </div>
+    
+    <script src="admin_script.js"></script>
+</body>
+</html>
