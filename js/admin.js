@@ -124,7 +124,7 @@ if (dealerSearchInput) {
     });
 }
 
-// ক্রেডিট টোকেন ফাংশন
+// ক্রেডিট টোকেন ফাংশন (পরিবর্তিত)
 if (creditBtn) {
     creditBtn.addEventListener('click', async () => {
         let dealerToUpdate = selectedDealer;
@@ -145,10 +145,15 @@ if (creditBtn) {
         }
 
         try {
-            await updateDoc(doc(db, "wallets", dealerToUpdate.id), {
-                tokens: increment(amount)
+            await addDoc(collection(db, "transactions"), {
+                userId: dealerToUpdate.id,
+                amount: amount,
+                type: 'credit',
+                adminId: auth.currentUser.uid,
+                status: 'pending',
+                createdAt: serverTimestamp()
             });
-            alert(`${amount} টোকেন সফলভাবে ক্রেডিট করা হয়েছে!`);
+            alert(`${amount} টোকেন ক্রেডিট করার অনুরোধ পাঠানো হয়েছে!`);
             tokenAmountInput.value = '';
             dealerSearchInput.value = '';
             selectedDealer = null;
@@ -159,7 +164,7 @@ if (creditBtn) {
     });
 }
 
-// ডেবিট টোকেন ফাংশন
+// ডেবিট টোকেন ফাংশন (পরিবর্তিত)
 if (debitBtn) {
     debitBtn.addEventListener('click', async () => {
         let dealerToUpdate = selectedDealer;
@@ -185,10 +190,15 @@ if (debitBtn) {
         }
 
         try {
-            await updateDoc(doc(db, "wallets", dealerToUpdate.id), {
-                tokens: increment(-amount)
+            await addDoc(collection(db, "transactions"), {
+                userId: dealerToUpdate.id,
+                amount: amount,
+                type: 'debit',
+                adminId: auth.currentUser.uid,
+                status: 'pending',
+                createdAt: serverTimestamp()
             });
-            alert(`${amount} টোকেন সফলভাবে ডেবিট করা হয়েছে!`);
+            alert(`${amount} টোকেন ডেবিট করার অনুরোধ পাঠানো হয়েছে!`);
             tokenAmountInput.value = '';
             dealerSearchInput.value = '';
             selectedDealer = null;
