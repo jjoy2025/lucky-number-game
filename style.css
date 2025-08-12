@@ -1,91 +1,139 @@
 body {
-    font-family: Arial, sans-serif;
-    background-color: #f0f2f5;
+    font-family: 'Arial', sans-serif;
+    background-color: #2c3e50; /* গাঢ় ব্যাকগ্রাউন্ড */
     margin: 0;
     padding: 0;
-    color: #333;
+    color: #ecf0f1; /* হালকা টেক্সট */
 }
 
 .container {
     max-width: 900px;
     margin: 0 auto;
-    padding: 20px;
+    padding: 10px;
 }
 
 header {
     text-align: center;
-    background-color: #fff;
-    padding: 20px;
-    border-radius: 8px;
-    margin-bottom: 20px;
-    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    padding: 15px;
+    margin-bottom: 10px;
 }
 
-header h1 {
+.logo {
     margin: 0;
-    color: #4a4a4a;
-    font-size: 2.5em;
+    color: #fff;
+    font-size: 2em;
+    font-weight: bold;
+    text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
 }
 
-section {
-    background-color: #fff;
-    padding: 20px;
-    border-radius: 8px;
-    margin-bottom: 20px;
-    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+.results-section {
+    background-color: #34495e; /* সেকশনের ব্যাকগ্রাউন্ড */
+    padding: 15px;
+    border-radius: 10px;
+    margin-bottom: 15px;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.3);
 }
 
-h2 {
+.section-title {
     text-align: center;
-    color: #007bff;
-    border-bottom: 2px solid #007bff;
-    padding-bottom: 10px;
-    margin-bottom: 20px;
+    color: #f1c40f; /* উজ্জ্বল হলুদ */
+    border-bottom: 2px solid #f1c40f;
+    padding-bottom: 8px;
+    margin-bottom: 15px;
+    font-size: 1.5em;
 }
 
 .results-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
-    gap: 10px;
+    grid-template-columns: repeat(auto-fit, minmax(80px, 1fr));
+    gap: 8px;
 }
 
 .result-box {
-    background-color: #f8f9fa;
-    border: 1px solid #ddd;
-    border-radius: 6px;
+    background-color: #293a4a;
+    border: 2px solid #f1c40f; /* উজ্জ্বল বর্ডার */
+    border-radius: 8px;
     text-align: center;
-    padding: 10px;
+    padding: 10px 5px;
     display: flex;
     flex-direction: column;
     justify-content: center;
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.result-box:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 20px rgba(0,0,0,0.4);
 }
 
 .result-box .patty {
-    font-size: 1.2em;
+    font-size: 1em;
     font-weight: bold;
-    color: #4a4a4a;
-    border-bottom: 1px solid #ccc;
+    color: #fff;
+    border-bottom: 1px solid #4a667e;
     padding-bottom: 5px;
     margin-bottom: 5px;
 }
 
 .result-box .single {
-    font-size: 2em;
+    font-size: 1.8em;
     font-weight: bold;
-    color: #007bff;
+    color: #f1c40f; /* উজ্জ্বল সিঙ্গেল নম্বর */
 }
 
-.loading {
-    background-color: #e9ecef;
-    color: #6c757d;
+.result-box .empty-text {
+    font-size: 0.9em;
+    color: #95a5a6;
 }
 
 .old-results-date {
-    background-color: #e9ecef;
-    padding: 10px;
+    background-color: #293a4a;
+    padding: 8px;
     border-radius: 6px;
-    margin-bottom: 15px;
+    margin-bottom: 10px;
     text-align: center;
     font-weight: bold;
-    color: #4a4a4a;
+    color: #f1c40f;
+    font-size: 1.1em;
 }
+
+.old-results-section h2.section-title {
+    margin-top: 0;
+}
+
+/* এডমিন প্যানেলের ডিজাইন */
+.admin-container {
+    background-color: #34495e;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+}
+.admin-container h2 {
+    color: #f1c40f;
+    border-bottom-color: #f1c40f;
+}
+.admin-form label {
+    color: #ecf0f1;
+}
+.admin-form input, .admin-form button {
+    background-color: #2c3e50;
+    color: #ecf0f1;
+    border: 1px solid #f1c40f;
+}
+.admin-form button {
+    background-color: #f1c40f;
+    color: #2c3e50;
+    font-weight: bold;
+}
+.admin-form button:hover {
+    background-color: #e6b200;
+}
+.logout-btn {
+    background-color: #e74c3c;
+    color: #fff;
+    border: none;
+}
+.logout-btn:hover {
+    background-color: #c0392b;
+}
+
