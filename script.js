@@ -28,14 +28,8 @@ function displayResults(container, results) {
         const pattyNumber = results[i] ? results[i].patty : '---';
         const singleNumber = results[i] ? results[i].single : '---';
         
-        let content;
-        if (pattyNumber === '---') {
-            content = `<div class="empty-text">খেলা ${i}</div>`;
-        } else {
-            content = `<div class="patty">${pattyNumber}</div>
-                       <div class="single">${singleNumber}</div>`;
-        }
-        resultBox.innerHTML = content;
+        resultBox.innerHTML = `<div class="patty">${pattyNumber}</div>
+                               <div class="single">${singleNumber}</div>`;
         resultsGrid.appendChild(resultBox);
     }
     container.appendChild(resultsGrid);
@@ -64,25 +58,21 @@ function loadResults() {
             dateSection.className = 'results-section';
             dateSection.innerHTML = `
                 <div class="old-results-date">${date}</div>
-                <div class="results-grid"></div>
             `;
-            const resultsGrid = dateSection.querySelector('.results-grid');
+            const resultsGrid = document.createElement('div');
+            resultsGrid.className = 'results-grid';
+
             for (let i = 1; i <= 8; i++) {
                 const resultBox = document.createElement('div');
                 resultBox.className = 'result-box';
                 const pattyNumber = results[i] ? results[i].patty : '---';
                 const singleNumber = results[i] ? results[i].single : '---';
                 
-                let content;
-                if (pattyNumber === '---') {
-                    content = `<div class="empty-text">খেলা ${i}</div>`;
-                } else {
-                    content = `<div class="patty">${pattyNumber}</div>
-                               <div class="single">${singleNumber}</div>`;
-                }
-                resultBox.innerHTML = content;
+                resultBox.innerHTML = `<div class="patty">${pattyNumber}</div>
+                                       <div class="single">${singleNumber}</div>`;
                 resultsGrid.appendChild(resultBox);
             }
+            dateSection.appendChild(resultsGrid);
             oldResultsContainer.prepend(dateSection);
         });
     });
