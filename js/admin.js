@@ -60,7 +60,7 @@ function loadAllDealersRealTime() {
         if (selectedDealer) {
             const updatedDealer = allDealers.find(d => d.id === selectedDealer.id);
             if (updatedDealer) {
-                currentDealerBalanceEl.textContent = updatedDealer.tokens;
+                currentDealerBalanceEl.textContent = updatedDealer.balance;
             }
         }
     });
@@ -89,7 +89,7 @@ if (dealerSearchInput) {
                     li.addEventListener('click', () => {
                         selectedDealer = dealer;
                         dealerSearchInput.value = dealer.email;
-                        currentDealerBalanceEl.textContent = dealer.tokens;
+                        currentDealerBalanceEl.textContent = dealer.balance;
                         dealerListDropdown.style.display = 'none';
                     });
                     dealerListDropdown.appendChild(li);
@@ -130,7 +130,7 @@ document.getElementById('creditBtn').addEventListener('click', async () => {
 
     try {
         await updateDoc(doc(db, "wallets", dealerToUpdate.id), {
-            tokens: increment(amount)
+            balance: increment(amount)
         });
         alert(`${amount} টোকেন সফলভাবে ক্রেডিট করা হয়েছে!`);
         tokenAmountInput.value = '';
@@ -160,14 +160,14 @@ document.getElementById('debitBtn').addEventListener('click', async () => {
         return;
     }
 
-    if (dealerToUpdate.tokens < amount) {
+    if (dealerToUpdate.balance < amount) {
         alert("ডিলারের অ্যাকাউন্টে পর্যাপ্ত টোকেন নেই।");
         return;
     }
 
     try {
         await updateDoc(doc(db, "wallets", dealerToUpdate.id), {
-            tokens: increment(-amount)
+            balance: increment(-amount)
         });
         alert(`${amount} টোকেন সফলভাবে ডেবিট করা হয়েছে!`);
         tokenAmountInput.value = '';
@@ -192,7 +192,7 @@ if (addDealerForm) {
 
             await setDoc(doc(db, "wallets", userId), {
                 email: email,
-                tokens: 0,
+                balance: 0,
                 createdAt: serverTimestamp()
             });
 
