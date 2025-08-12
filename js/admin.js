@@ -114,13 +114,18 @@ if (dealerSearchInput) {
 // ক্রেডিট টোকেন ফাংশন
 document.getElementById('creditBtn').addEventListener('click', async () => {
     let dealerIdToUpdate = null;
-    const dealerEmail = dealerSearchInput.value.trim();
+    let dealerEmail = dealerSearchInput.value.trim();
 
-    // ডিলার খোঁজা
-    const dealer = allDealers.find(d => d.email === dealerEmail);
-    if (dealer) {
-        dealerIdToUpdate = dealer.id;
+    if (selectedDealerId) {
+        dealerIdToUpdate = selectedDealerId;
     } else {
+        const dealer = allDealers.find(d => d.email.toLowerCase() === dealerEmail.toLowerCase());
+        if (dealer) {
+            dealerIdToUpdate = dealer.id;
+        }
+    }
+
+    if (!dealerIdToUpdate) {
         alert("দয়া করে একজন বৈধ ডিলার নির্বাচন করুন বা সঠিক ইমেল লিখুন।");
         return;
     }
@@ -136,14 +141,13 @@ document.getElementById('creditBtn').addEventListener('click', async () => {
         await updateDoc(dealerDocRef, {
             tokens: increment(amount)
         });
-        
-        const currentBalance = parseInt(currentDealerBalanceEl.textContent);
-        const newBalance = currentBalance + amount;
-        currentDealerBalanceEl.textContent = newBalance;
-        
+
+        await loadAllDealers();
+        const updatedDealer = allDealers.find(d => d.id === dealerIdToUpdate);
+        currentDealerBalanceEl.textContent = updatedDealer.tokens;
+
         alert(`${amount} টোকেন সফলভাবে ক্রেডিট করা হয়েছে!`);
         tokenAmountInput.value = '';
-        await loadAllDealers();
     } catch (error) {
         console.error("টোকেন ক্রেডিট করতে ব্যর্থ:", error);
         alert("টোকেন ক্রেডিট করতে ব্যর্থ।");
@@ -153,13 +157,18 @@ document.getElementById('creditBtn').addEventListener('click', async () => {
 // ডেবিট টোকেন ফাংশন
 document.getElementById('debitBtn').addEventListener('click', async () => {
     let dealerIdToUpdate = null;
-    const dealerEmail = dealerSearchInput.value.trim();
+    let dealerEmail = dealerSearchInput.value.trim();
 
-    // ডিলার খোঁজা
-    const dealer = allDealers.find(d => d.email === dealerEmail);
-    if (dealer) {
-        dealerIdToUpdate = dealer.id;
+    if (selectedDealerId) {
+        dealerIdToUpdate = selectedDealerId;
     } else {
+        const dealer = allDealers.find(d => d.email.toLowerCase() === dealerEmail.toLowerCase());
+        if (dealer) {
+            dealerIdToUpdate = dealer.id;
+        }
+    }
+
+    if (!dealerIdToUpdate) {
         alert("দয়া করে একজন বৈধ ডিলার নির্বাচন করুন বা সঠিক ইমেল লিখুন।");
         return;
     }
@@ -172,8 +181,9 @@ document.getElementById('debitBtn').addEventListener('click', async () => {
 
     try {
         const dealerDocRef = doc(db, "wallets", dealerIdToUpdate);
-        const currentBalance = parseInt(currentDealerBalanceEl.textContent);
-        if (currentBalance < amount) {
+        const updatedDealer = allDealers.find(d => d.id === dealerIdToUpdate);
+
+        if (!updatedDealer || updatedDealer.tokens < amount) {
             alert("ডিলারের অ্যাকাউন্টে পর্যাপ্ত টোকেন নেই।");
             return;
         }
@@ -181,13 +191,13 @@ document.getElementById('debitBtn').addEventListener('click', async () => {
         await updateDoc(dealerDocRef, {
             tokens: increment(-amount)
         });
-        
-        const newBalance = currentBalance - amount;
-        currentDealerBalanceEl.textContent = newBalance;
-        
+
+        await loadAllDealers();
+        const refreshedDealer = allDealers.find(d => d.id === dealerIdToUpdate);
+        currentDealerBalanceEl.textContent = refreshedDealer.tokens;
+
         alert(`${amount} টোকেন সফলভাবে ডেবিট করা হয়েছে!`);
         tokenAmountInput.value = '';
-        await loadAllDealers();
     } catch (error) {
         console.error("টোকেন ডেবিট করতে ব্যর্থ:", error);
         alert("টোকেন ডেবিট করতে ব্যর্থ।");
@@ -214,7 +224,6 @@ if (addDealerForm) {
 
             alert(`ডিলার ${email} সফলভাবে যোগ করা হয়েছে!`);
             addDealerForm.reset();
-            // নতুন ডিলার যুক্ত হওয়ার পর, ডিলার লিস্ট পুনরায় লোড করা
             await loadAllDealers();
         } catch (error) {
             alert("ডিলার যোগ করতে ব্যর্থ: " + error.message);
