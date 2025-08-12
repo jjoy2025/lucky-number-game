@@ -1,3 +1,4 @@
+// আপনার Firebase কনফিগারেশন
 const firebaseConfig = {
     apiKey: "AIzaSyArpsy4tpySdQEEuZzIa0ZWpz5VzdN7i_I",
     authDomain: "the-lucky-number-9f211.firebaseapp.com",
@@ -17,23 +18,25 @@ const todayResultsGrid = document.getElementById('today-results-grid');
 const oldResultsContainer = document.getElementById('old-results-container');
 
 function displayResults(container, results) {
+    container.innerHTML = '';
     const resultsGrid = document.createElement('div');
     resultsGrid.className = 'results-grid';
 
-    if (Object.keys(results).length === 0) {
-        resultsGrid.innerHTML = '<p style="text-align: center;">কোনো রেজাল্ট নেই।</p>';
-    } else {
-        for (let i = 1; i <= 8; i++) {
-            const resultBox = document.createElement('div');
-            resultBox.className = 'result-box';
-            const pattyNumber = results[i] ? results[i].patty : '---';
-            const singleNumber = results[i] ? results[i].single : '---';
-            resultBox.innerHTML = `
-                <div class="patty">${pattyNumber}</div>
-                <div class="single">${singleNumber}</div>
-            `;
-            resultsGrid.appendChild(resultBox);
+    for (let i = 1; i <= 8; i++) {
+        const resultBox = document.createElement('div');
+        resultBox.className = 'result-box';
+        const pattyNumber = results[i] ? results[i].patty : '---';
+        const singleNumber = results[i] ? results[i].single : '---';
+        
+        let content;
+        if (pattyNumber === '---') {
+            content = `<div class="empty-text">খেলা ${i}</div>`;
+        } else {
+            content = `<div class="patty">${pattyNumber}</div>
+                       <div class="single">${singleNumber}</div>`;
         }
+        resultBox.innerHTML = content;
+        resultsGrid.appendChild(resultBox);
     }
     container.appendChild(resultsGrid);
 }
@@ -45,11 +48,9 @@ function loadResults() {
 
     todayRef.on('value', (snapshot) => {
         const results = snapshot.val() || {};
-        const emptyResults = {
-            1: null, 2: null, 3: null, 4: null, 5: null, 6: null, 7: null, 8: null
-        };
+        const emptyResults = { 1: null, 2: null, 3: null, 4: null, 5: null, 6: null, 7: null, 8: null };
         todayResultsGrid.innerHTML = '';
-        displayResults(todayResultsGrid, {...emptyResults, ...results});
+        displayResults(todayResultsGrid, { ...emptyResults, ...results });
     });
 
     // পুরোনো রেজাল্ট লোড
@@ -59,11 +60,11 @@ function loadResults() {
         snapshot.forEach((childSnapshot) => {
             const date = childSnapshot.key;
             const results = childSnapshot.val();
-            const dateSection = document.createElement('section');
+            const dateSection = document.createElement('div');
+            dateSection.className = 'results-section';
             dateSection.innerHTML = `
-                <h2>${date}</h2>
-                <div class="results-grid">
-                </div>
+                <div class="old-results-date">${date}</div>
+                <div class="results-grid"></div>
             `;
             const resultsGrid = dateSection.querySelector('.results-grid');
             for (let i = 1; i <= 8; i++) {
@@ -71,10 +72,15 @@ function loadResults() {
                 resultBox.className = 'result-box';
                 const pattyNumber = results[i] ? results[i].patty : '---';
                 const singleNumber = results[i] ? results[i].single : '---';
-                resultBox.innerHTML = `
-                    <div class="patty">${pattyNumber}</div>
-                    <div class="single">${singleNumber}</div>
-                `;
+                
+                let content;
+                if (pattyNumber === '---') {
+                    content = `<div class="empty-text">খেলা ${i}</div>`;
+                } else {
+                    content = `<div class="patty">${pattyNumber}</div>
+                               <div class="single">${singleNumber}</div>`;
+                }
+                resultBox.innerHTML = content;
                 resultsGrid.appendChild(resultBox);
             }
             oldResultsContainer.prepend(dateSection);
