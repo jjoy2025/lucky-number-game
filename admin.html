@@ -6,37 +6,45 @@
     <title>এডমিন প্যানেল</title>
     <link rel="stylesheet" href="style.css">
     <style>
+        /* এই স্টাইলগুলো admin.html-এর জন্য নির্দিষ্ট, তাই এখানে রাখা হয়েছে */
         .admin-container {
             max-width: 600px;
             margin: 50px auto;
             padding: 20px;
-            background-color: #fff;
-            border-radius: 8px;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            background-color: #34495e;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+            color: #ecf0f1;
         }
         .admin-container h2 {
             text-align: center;
-            color: #007bff;
+            color: #f1c40f;
+            border-bottom: 2px solid #f1c40f;
+            padding-bottom: 10px;
+            margin-bottom: 20px;
         }
-        .auth-form input, .result-form input, .result-form button {
+        .admin-form input, .admin-form button {
             width: 100%;
             padding: 10px;
             margin-bottom: 15px;
-            border: 1px solid #ddd;
             border-radius: 4px;
             box-sizing: border-box;
+            background-color: #2c3e50;
+            color: #ecf0f1;
+            border: 1px solid #f1c40f;
         }
-        .auth-form button, .result-form button {
-            background-color: #007bff;
-            color: #fff;
+        .admin-form button {
+            background-color: #f1c40f;
+            color: #2c3e50;
+            font-weight: bold;
             border: none;
             cursor: pointer;
             font-size: 1em;
         }
-        .auth-form button:hover, .result-form button:hover {
-            background-color: #0056b3;
+        .admin-form button:hover {
+            background-color: #e6b200;
         }
-        .result-form label {
+        .admin-form label {
             font-weight: bold;
             margin-bottom: 5px;
             display: block;
@@ -45,23 +53,23 @@
             display: none;
         }
         .result-form {
-            background-color: #f8f9fa;
+            background-color: #293a4a;
             padding: 15px;
-            border-radius: 6px;
+            border-radius: 8px;
             margin-bottom: 15px;
-            border: 1px solid #eee;
         }
         .logout-btn {
-            background-color: #dc3545;
+            background-color: #e74c3c;
             color: #fff;
             border: none;
             padding: 10px;
             cursor: pointer;
             border-radius: 4px;
             float: right;
+            margin-bottom: 15px;
         }
         .logout-btn:hover {
-            background-color: #c82333;
+            background-color: #c0392b;
         }
     </style>
     <script src="https://www.gstatic.com/firebasejs/8.6.8/firebase-app.js"></script>
@@ -72,16 +80,17 @@
     <div class="admin-container">
         <div id="login-section">
             <h2>এডমিন লগইন</h2>
-            <form id="auth-form" class="auth-form">
+            <form id="auth-form" class="admin-form">
                 <input type="email" id="email" placeholder="ইমেল" required>
                 <input type="password" id="password" placeholder="পাসওয়ার্ড" required>
                 <button type="submit">লগইন করুন</button>
-                <p id="error-message" style="color: red; text-align: center;"></p>
+                <p id="error-message" style="color: #e74c3c; text-align: center;"></p>
             </form>
         </div>
 
         <div id="result-forms-container">
             <button id="logout-button" class="logout-btn">লগআউট</button>
+            <div style="clear: both;"></div>
             <h2>রেজাল্ট আপডেট করুন</h2>
             <div id="result-forms">
                 </div>
