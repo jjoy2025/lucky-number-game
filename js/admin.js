@@ -113,16 +113,16 @@ if (dealerSearchInput) {
 
 // ক্রেডিট টোকেন ফাংশন
 document.getElementById('creditBtn').addEventListener('click', async () => {
-    let dealerIdToUpdate = selectedDealerId;
-    if (!dealerIdToUpdate) {
-        const dealerEmail = dealerSearchInput.value.trim();
-        const dealer = allDealers.find(d => d.email === dealerEmail);
-        if (dealer) {
-            dealerIdToUpdate = dealer.id;
-        } else {
-            alert("দয়া করে একজন বৈধ ডিলার নির্বাচন করুন বা সঠিক ইমেল লিখুন।");
-            return;
-        }
+    let dealerIdToUpdate = null;
+    const dealerEmail = dealerSearchInput.value.trim();
+
+    // ডিলার খোঁজা
+    const dealer = allDealers.find(d => d.email === dealerEmail);
+    if (dealer) {
+        dealerIdToUpdate = dealer.id;
+    } else {
+        alert("দয়া করে একজন বৈধ ডিলার নির্বাচন করুন বা সঠিক ইমেল লিখুন।");
+        return;
     }
 
     const amount = parseInt(tokenAmountInput.value);
@@ -152,16 +152,16 @@ document.getElementById('creditBtn').addEventListener('click', async () => {
 
 // ডেবিট টোকেন ফাংশন
 document.getElementById('debitBtn').addEventListener('click', async () => {
-    let dealerIdToUpdate = selectedDealerId;
-    if (!dealerIdToUpdate) {
-        const dealerEmail = dealerSearchInput.value.trim();
-        const dealer = allDealers.find(d => d.email === dealerEmail);
-        if (dealer) {
-            dealerIdToUpdate = dealer.id;
-        } else {
-            alert("দয়া করে একজন বৈধ ডিলার নির্বাচন করুন বা সঠিক ইমেল লিখুন।");
-            return;
-        }
+    let dealerIdToUpdate = null;
+    const dealerEmail = dealerSearchInput.value.trim();
+
+    // ডিলার খোঁজা
+    const dealer = allDealers.find(d => d.email === dealerEmail);
+    if (dealer) {
+        dealerIdToUpdate = dealer.id;
+    } else {
+        alert("দয়া করে একজন বৈধ ডিলার নির্বাচন করুন বা সঠিক ইমেল লিখুন।");
+        return;
     }
 
     const amount = parseInt(tokenAmountInput.value);
