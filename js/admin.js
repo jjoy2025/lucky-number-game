@@ -18,14 +18,13 @@ import {
     where,
     orderBy,
     serverTimestamp,
-    getDoc,
     setDoc,
     increment,
-    deleteDoc
+    onSnapshot
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 import { firebaseConfig } from './firebase-config.js';
 
-// Firebase অ্যাপ ইনিশিয়ালাইজ করুন
+// Firebase অ্যাপ ইনিশিয়ালাইজ
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
@@ -36,12 +35,12 @@ let allDealers = [];
 let selectedDealerId = null;
 
 // লগইন চেক
-onAuthStateChanged(auth, async (user) => {
+onAuthStateChanged(auth, (user) => {
     if (!user || user.uid !== ADMIN_UID) {
         alert("আপনি এডমিন নন!");
         window.location.href = "./index.html";
     } else {
-        await loadAllDealers();
+        loadAllDealers(); // রিয়েল-টাইম লোড
         loadBettingGraphs();
     }
 });
@@ -58,17 +57,18 @@ document.getElementById('logoutBtn').addEventListener('click', async () => {
     }
 });
 
-// সমস্ত ডিলার ডেটা লোড করা
-async function loadAllDealers() {
+// সমস্ত ডিলার রিয়েল-টাইমে লোড
+function loadAllDealers() {
     const q = query(collection(db, "wallets"));
-    const snap = await getDocs(q);
-    allDealers = snap.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data()
-    }));
+    onSnapshot(q, (snap) => {
+        allDealers = snap.docs.map(doc => ({
+            id: doc.id,
+            ...doc.data()
+        }));
+    });
 }
 
-// ডিলার সার্চ ইনপুট এবং অটোকমপ্লিট লজিক
+// ডিলার সার্চ ইনপুট এবং অটোকমপ্লিট
 const dealerSearchInput = document.getElementById('dealerSearchInput');
 const dealerListDropdown = document.getElementById('dealerListDropdown');
 const currentDealerBalanceEl = document.getElementById('currentDealerBalance');
@@ -82,7 +82,9 @@ if (dealerSearchInput) {
         currentDealerBalanceEl.textContent = '0';
         
         if (query.length > 0) {
-            const filteredDealers = allDealers.filter(dealer => dealer.email.toLowerCase().includes(query));
+            const filteredDealers = allDealers.filter(dealer => 
+                dealer.email && dealer.email.toLowerCase().includes(query)
+            );
             if (filteredDealers.length > 0) {
                 filteredDealers.forEach(dealer => {
                     const li = document.createElement('li');
@@ -111,18 +113,13 @@ if (dealerSearchInput) {
     });
 }
 
-// ক্রেডিট টোকেন ফাংশন
+// ক্রেডিট টোকেন
 document.getElementById('creditBtn').addEventListener('click', async () => {
-    let dealerIdToUpdate = null;
-    let dealerEmail = dealerSearchInput.value.trim();
-
-    if (selectedDealerId) {
-        dealerIdToUpdate = selectedDealerId;
-    } else {
-        const dealer = allDealers.find(d => d.email.toLowerCase() === dealerEmail.toLowerCase());
-        if (dealer) {
-            dealerIdToUpdate = dealer.id;
-        }
+    let dealerIdToUpdate = selectedDealerId;
+    if (!dealerIdToUpdate) {
+        const dealerEmail = dealerSearchInput.value.trim().toLowerCase();
+        const dealer = allDealers.find(d => d.email && d.email.toLowerCase() === dealerEmail);
+        if (dealer) dealerIdToUpdate = dealer.id;
     }
 
     if (!dealerIdToUpdate) {
@@ -137,15 +134,9 @@ document.getElementById('creditBtn').addEventListener('click', async () => {
     }
 
     try {
-        const dealerDocRef = doc(db, "wallets", dealerIdToUpdate);
-        await updateDoc(dealerDocRef, {
+        await updateDoc(doc(db, "wallets", dealerIdToUpdate), {
             tokens: increment(amount)
         });
-
-        await loadAllDealers();
-        const updatedDealer = allDealers.find(d => d.id === dealerIdToUpdate);
-        currentDealerBalanceEl.textContent = updatedDealer.tokens;
-
         alert(`${amount} টোকেন সফলভাবে ক্রেডিট করা হয়েছে!`);
         tokenAmountInput.value = '';
     } catch (error) {
@@ -154,18 +145,13 @@ document.getElementById('creditBtn').addEventListener('click', async () => {
     }
 });
 
-// ডেবিট টোকেন ফাংশন
+// ডেবিট টোকেন
 document.getElementById('debitBtn').addEventListener('click', async () => {
-    let dealerIdToUpdate = null;
-    let dealerEmail = dealerSearchInput.value.trim();
-
-    if (selectedDealerId) {
-        dealerIdToUpdate = selectedDealerId;
-    } else {
-        const dealer = allDealers.find(d => d.email.toLowerCase() === dealerEmail.toLowerCase());
-        if (dealer) {
-            dealerIdToUpdate = dealer.id;
-        }
+    let dealerIdToUpdate = selectedDealerId;
+    if (!dealerIdToUpdate) {
+        const dealerEmail = dealerSearchInput.value.trim().toLowerCase();
+        const dealer = allDealers.find(d => d.email && d.email.toLowerCase() === dealerEmail);
+        if (dealer) dealerIdToUpdate = dealer.id;
     }
 
     if (!dealerIdToUpdate) {
@@ -179,23 +165,16 @@ document.getElementById('debitBtn').addEventListener('click', async () => {
         return;
     }
 
+    const dealerData = allDealers.find(d => d.id === dealerIdToUpdate);
+    if (!dealerData || dealerData.tokens < amount) {
+        alert("ডিলারের অ্যাকাউন্টে পর্যাপ্ত টোকেন নেই।");
+        return;
+    }
+
     try {
-        const dealerDocRef = doc(db, "wallets", dealerIdToUpdate);
-        const updatedDealer = allDealers.find(d => d.id === dealerIdToUpdate);
-
-        if (!updatedDealer || updatedDealer.tokens < amount) {
-            alert("ডিলারের অ্যাকাউন্টে পর্যাপ্ত টোকেন নেই।");
-            return;
-        }
-
-        await updateDoc(dealerDocRef, {
+        await updateDoc(doc(db, "wallets", dealerIdToUpdate), {
             tokens: increment(-amount)
         });
-
-        await loadAllDealers();
-        const refreshedDealer = allDealers.find(d => d.id === dealerIdToUpdate);
-        currentDealerBalanceEl.textContent = refreshedDealer.tokens;
-
         alert(`${amount} টোকেন সফলভাবে ডেবিট করা হয়েছে!`);
         tokenAmountInput.value = '';
     } catch (error) {
@@ -204,12 +183,12 @@ document.getElementById('debitBtn').addEventListener('click', async () => {
     }
 });
 
-// নতুন ডিলার অ্যাড করার লজিক
+// নতুন ডিলার অ্যাড
 const addDealerForm = document.getElementById('addDealerForm');
 if (addDealerForm) {
     addDealerForm.addEventListener('submit', async (e) => {
         e.preventDefault();
-        const email = document.getElementById('dealerEmailInput').value;
+        const email = document.getElementById('dealerEmailInput').value.trim();
         const password = document.getElementById('dealerPasswordInput').value;
 
         try {
@@ -224,7 +203,6 @@ if (addDealerForm) {
 
             alert(`ডিলার ${email} সফলভাবে যোগ করা হয়েছে!`);
             addDealerForm.reset();
-            await loadAllDealers();
         } catch (error) {
             alert("ডিলার যোগ করতে ব্যর্থ: " + error.message);
         }
@@ -262,16 +240,12 @@ document.querySelectorAll('.saveResultBtn').forEach(btn => {
     });
 });
 
-// বেটিং গ্রাফ লোড করার ফাংশন
+// বেটিং গ্রাফ লোড
 async function loadBettingGraphs() {
-    const today = new Date().toLocaleDateString("en-GB");
     const gameSlots = [1, 2, 3, 4, 5, 6, 7, 8];
 
     for (const slot of gameSlots) {
-        const q = query(
-            collection(db, "bets"),
-            where("gameSlot", "==", slot)
-        );
+        const q = query(collection(db, "bets"), where("gameSlot", "==", slot));
         const snapshot = await getDocs(q);
 
         const bettingData = {
@@ -281,10 +255,8 @@ async function loadBettingGraphs() {
 
         snapshot.forEach(doc => {
             const data = doc.data();
-            const number = data.number;
-            const tokens = data.tokens;
-            if (bettingData[number] !== undefined) {
-                bettingData[number] += tokens;
+            if (bettingData[data.number] !== undefined) {
+                bettingData[data.number] += data.tokens;
             }
         });
 
@@ -309,25 +281,12 @@ async function loadBettingGraphs() {
                     options: {
                         responsive: true,
                         scales: {
-                            y: {
-                                beginAtZero: true,
-                                title: {
-                                    display: true,
-                                    text: 'টোকেন'
-                                }
-                            },
-                            x: {
-                                title: {
-                                    display: true,
-                                    text: 'নাম্বার'
-                                }
-                            }
+                            y: { beginAtZero: true, title: { display: true, text: 'টোকেন' } },
+                            x: { title: { display: true, text: 'নাম্বার' } }
                         }
                     }
                 });
-                if (!window.myCharts) {
-                    window.myCharts = {};
-                }
+                if (!window.myCharts) window.myCharts = {};
                 window.myCharts[`chart-slot-${slot}`] = newChart;
             }
         }
