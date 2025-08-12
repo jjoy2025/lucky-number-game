@@ -1,65 +1,69 @@
-// js/publicResults.js
-const db = firebase.firestore();
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import { getFirestore, collection, query, getDocs, orderBy, limit } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import { firebaseConfig } from './firebase-config.js';
 
-// Today results (from 'results' collection)
-async function loadTodayResultsUI(containerIdToday) {
-  const container = document.getElementById(containerIdToday);
-  container.innerHTML = "লোড হচ্ছে...";
+// Firebase অ্যাপ ইনিশিয়ালাইজ করুন
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
 
-  try {
-    const snaps = await db.collection("results").orderBy("timestamp", "asc").get();
-    if (snaps.empty) {
-      container.innerHTML = "<div>আজকের রেজাল্ট এখনও নেই</div>";
-      return;
+// আজকের রেজাল্ট লোড করুন
+async function loadTodayResults() {
+    const todayResultsContainer = document.getElementById('todayResults');
+    todayResultsContainer.innerHTML = 'লোডিং...';
+
+    const today = new Date().toLocaleDateString("en-GB");
+    try {
+        const q = query(collection(db, "results"), orderBy("createdAt", "desc"), limit(1));
+        const querySnapshot = await getDocs(q);
+
+        if (!querySnapshot.empty) {
+            const doc = querySnapshot.docs[0];
+            const result = doc.data();
+            todayResultsContainer.innerHTML = `
+                <div class="result-display">
+                    <h3>আজকের রেজাল্ট:</h3>
+                    <p>পত্তি: ${result.patti}</p>
+                    <p>সিঙ্গেল: ${result.single}</p>
+                </div>
+            `;
+        } else {
+            todayResultsContainer.innerHTML = '<p>আজকের জন্য কোনো রেজাল্ট নেই।</p>';
+        }
+    } catch (error) {
+        console.error("আজকের রেজাল্ট লোড করতে ব্যর্থ:", error);
+        todayResultsContainer.innerHTML = '<p>রেজাল্ট লোড করতে সমস্যা হয়েছে।</p>';
     }
-    let html = '';
-    snaps.forEach(doc => {
-      const d = doc.data();
-      const label = d.timeslotLabel || d.gameSlot || d.timeslot || "Slot";
-      const num = (d.number !== undefined) ? d.number : (d.winningNumber !== undefined ? d.winningNumber : "-");
-      html += `<div class="result-row"><strong>${label}</strong> — ${num}</div>`;
-    });
-    container.innerHTML = html;
-  } catch (err) {
-    container.innerHTML = `<div class="error">রেজাল্ট লোড ত্রুটি: ${err.message}</div>`;
-  }
 }
 
-// Last 10 days archived results (from 'archivedResults')
-async function loadLastTenDaysUI(containerIdOld) {
-  const container = document.getElementById(containerIdOld);
-  container.innerHTML = "লোড হচ্ছে...";
+// পুরাতন রেজাল্ট লোড করুন
+async function loadOldResults() {
+    const oldResultsContainer = document.getElementById('oldResults');
+    oldResultsContainer.innerHTML = 'লোডিং...';
 
-  try {
-    const snaps = await db.collection("archivedResults").orderBy("date", "desc").limit(10).get();
-    if (snaps.empty) {
-      container.innerHTML = "<div>কোনো পুরানো রেজাল্ট নেই</div>";
-      return;
+    try {
+        const q = query(collection(db, "results"), orderBy("createdAt", "desc"), limit(10));
+        const querySnapshot = await getDocs(q);
+
+        if (!querySnapshot.empty) {
+            let html = `<h3>পুরাতন রেজাল্ট:</h3><table><tr><th>তারিখ</th><th>স্লট</th><th>পত্তি</th><th>সিঙ্গেল</th></tr>`;
+            querySnapshot.forEach((doc) => {
+                const result = doc.data();
+                const date = result.createdAt ? new Date(result.createdAt.toDate()).toLocaleDateString("en-GB") : 'N/A';
+                html += `<tr><td>${date}</td><td>${result.slot}</td><td>${result.patti}</td><td>${result.single}</td></tr>`;
+            });
+            html += `</table>`;
+            oldResultsContainer.innerHTML = html;
+        } else {
+            oldResultsContainer.innerHTML = '<p>কোনো পুরাতন রেজাল্ট নেই।</p>';
+        }
+    } catch (error) {
+        console.error("পুরাতন রেজাল্ট লোড করতে ব্যর্থ:", error);
+        oldResultsContainer.innerHTML = '<p>রেজাল্ট লোড করতে সমস্যা হয়েছে।</p>';
     }
-    let html = '';
-    snaps.forEach(doc => {
-      const d = doc.data();
-      html += `<div style="margin-bottom:10px;"><strong>${d.date}</strong><div>`;
-      if (Array.isArray(d.items) && d.items.length) {
-        d.items.forEach(it => {
-          const label = it.timeslotLabel || it.gameSlot || it.timeslot || "Slot";
-          const num = (it.number !== undefined) ? it.number : (it.winningNumber !== undefined ? it.winningNumber : "-");
-          html += `<div class="result-row"><strong>${label}</strong> — ${num}</div>`;
-        });
-      } else {
-        html += `<div>No details</div>`;
-      }
-      html += `</div></div>`;
-    });
-    container.innerHTML = html;
-  } catch (err) {
-    container.innerHTML = `<div class="error">লোড ত্রুটি: ${err.message}</div>`;
-  }
 }
 
-function initPublicResults(todayContainerId = 'todayResults', oldContainerId = 'oldResults') {
-  loadTodayResultsUI(todayContainerId);
-  loadLastTenDaysUI(oldContainerId);
-  // Optional: auto-refresh today results every 60s
-  // setInterval(() => loadTodayResultsUI(todayContainerId), 60*1000);
-}
+// উভয় ফাংশন কল করুন
+window.addEventListener('DOMContentLoaded', () => {
+    loadTodayResults();
+    loadOldResults();
+});
