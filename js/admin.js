@@ -1,9 +1,9 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-import { 
-    getAuth, 
-    signOut, 
+import {
+    getAuth,
+    signOut,
     onAuthStateChanged,
-    createUserWithEmailAndPassword 
+    createUserWithEmailAndPassword
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 import {
     getFirestore,
@@ -27,7 +27,7 @@ const auth = getAuth(app);
 const db = getFirestore(app);
 
 let allDealers = [];
-let selectedDealer = null; 
+let selectedDealer = null;
 
 const dealerSearchInput = document.getElementById('dealerSearchInput');
 const dealerListDropdown = document.getElementById('dealerListDropdown');
@@ -81,11 +81,11 @@ if (dealerSearchInput) {
     dealerSearchInput.addEventListener('input', (e) => {
         const query = e.target.value.toLowerCase();
         dealerListDropdown.innerHTML = '';
-        selectedDealer = null; 
+        selectedDealer = null;
         currentDealerBalanceEl.textContent = '0';
-        
+
         if (query.length > 0) {
-            const filteredDealers = allDealers.filter(dealer => 
+            const filteredDealers = allDealers.filter(dealer =>
                 dealer.email && dealer.email.toLowerCase().includes(query)
             );
             if (filteredDealers.length > 0) {
@@ -136,10 +136,15 @@ if (creditBtn) {
         }
 
         try {
-            await updateDoc(doc(db, "wallets", dealerToUpdate.id), {
-                tokens: increment(amount)
+            await addDoc(collection(db, "transactions"), {
+                userId: dealerToUpdate.id,
+                amount: amount,
+                type: 'credit',
+                status: 'pending',
+                timestamp: serverTimestamp()
             });
-            alert(`${amount} টোকেন সফলভাবে ক্রেডিট করা হয়েছে!`);
+
+            alert(`${amount} টোকেন ক্রেডিট করার জন্য লেনদেন জমা দেওয়া হয়েছে!`);
             tokenAmountInput.value = '';
             dealerSearchInput.value = '';
             selectedDealer = null;
@@ -169,16 +174,17 @@ if (debitBtn) {
             return;
         }
 
-        if ((dealerToUpdate.tokens || 0) < amount) {
-            alert("ডিলারের অ্যাকাউন্টে পর্যাপ্ত টোকেন নেই।");
-            return;
-        }
-
+        // ক্লাউড ফাংশন ব্যালেন্স চেক করবে
         try {
-            await updateDoc(doc(db, "wallets", dealerToUpdate.id), {
-                tokens: increment(-amount)
+            await addDoc(collection(db, "transactions"), {
+                userId: dealerToUpdate.id,
+                amount: amount,
+                type: 'debit',
+                status: 'pending',
+                timestamp: serverTimestamp()
             });
-            alert(`${amount} টোকেন সফলভাবে ডেবিট করা হয়েছে!`);
+
+            alert(`${amount} টোকেন ডেবিট করার জন্য লেনদেন জমা দেওয়া হয়েছে!`);
             tokenAmountInput.value = '';
             dealerSearchInput.value = '';
             selectedDealer = null;
@@ -225,7 +231,7 @@ document.querySelectorAll('.saveResultBtn').forEach(btn => {
             return;
         }
 
-        if(single < '0' || single > '9' || single.length > 1) {
+        if (single < '0' || single > '9' || single.length > 1) {
             alert("সিঙ্গেল নাম্বারটি অবশ্যই 0-9 এর মধ্যে হতে হবে!");
             return;
         }
@@ -234,19 +240,21 @@ document.querySelectorAll('.saveResultBtn').forEach(btn => {
             slot,
             patti,
             single: parseInt(single),
+            date: new Date().toLocaleDateString("en-GB"), // নতুন ডেট ফিল্ড যোগ করা হয়েছে
             createdAt: serverTimestamp()
         });
 
         alert(`গেম ${slot} রেজাল্ট সফলভাবে সেভ হয়েছে!`);
+        // রেজাল্ট সেভ করার পর গ্রাফ পুনরায় লোড করুন
         loadBettingGraphs();
     });
 });
 
 async function loadBettingGraphs() {
-    const gameSlots = [1, 2, 3, 4, 5, 6, 7, 8};
+    const gameSlots = [1, 2, 3, 4, 5, 6, 7, 8];
 
     for (const slot of gameSlots) {
-        const q = query(collection(db, "bets"), where("gameSlot", "==", slot));
+        const q = query(collection(db, "bets"), where("gameSlot", "==", parseInt(slot)));
         const snapshot = await getDocs(q);
 
         const bettingData = {
