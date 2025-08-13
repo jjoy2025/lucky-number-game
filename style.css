@@ -1,9 +1,9 @@
 body {
     font-family: 'Arial', sans-serif;
-    background-color: #f0f2f5; /* হালকা গ্রে ব্যাকগ্রাউন্ড */
+    background-color: #2b3a4a; /* ডার্ক ব্লু-গ্রে ব্যাকগ্রাউন্ড */
     margin: 0;
     padding: 0;
-    color: #333;
+    color: #f0f0f0;
 }
 
 .container {
@@ -14,83 +14,93 @@ body {
 
 header {
     text-align: center;
-    padding: 20px;
-    margin-bottom: 20px;
+    padding: 20px 0;
+    margin-bottom: 10px;
 }
 
 .logo {
     margin: 0;
-    color: #d4a700; /* গোল্ডেন কালার */
+    color: #fff;
     font-size: 2.5em;
     font-weight: bold;
     text-shadow: 1px 1px 2px rgba(0,0,0,0.1);
 }
 
+/* লাইভ রিফ্রেশ অ্যানিমেশন */
+.live-refresh-section {
+    text-align: center;
+    margin-bottom: 15px;
+    font-size: 1.1em;
+    font-weight: bold;
+    color: #fff;
+}
+.live-dot {
+    display: inline-block;
+    width: 10px;
+    height: 10px;
+    background-color: #dc3545; /* লাল রং */
+    border-radius: 50%;
+    margin-right: 5px;
+    animation: blink 1.5s infinite;
+}
+@keyframes blink {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0; }
+}
+
+/* রেজাল্ট সেকশনের ডিজাইন */
 .results-section {
-    background-color: #ffffff; /* সাদা ব্যাকগ্রাউন্ড */
-    padding: 20px;
+    background-color: #34495e; /* সেকশনের ব্যাকগ্রাউন্ড */
+    padding: 20px 10px;
     border-radius: 12px;
     margin-bottom: 25px;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.2);
 }
 
 .section-title {
     text-align: center;
-    color: #007bff; /* নীল কালার */
-    border-bottom: 2px solid #007bff;
-    padding-bottom: 10px;
-    margin-bottom: 20px;
+    color: #fff;
     font-size: 1.6em;
     font-weight: bold;
+    margin-bottom: 15px;
 }
 
-/* আজকের রেজাল্টের জন্য টেবিল-সদৃশ ডিজাইন */
+/* আজকের রেজাল্ট টেবিলের ডিজাইন */
 .today-table {
     width: 100%;
     border-collapse: collapse;
+    margin-top: 15px;
 }
 
-.today-table tr {
-    display: flex;
-    justify-content: space-around;
-    align-items: flex-start;
-    flex-wrap: wrap;
-    margin-bottom: 10px;
+.today-table thead th {
+    background-color: #465a6e;
+    color: #f0f0f0;
+    font-weight: normal;
+    padding: 10px 0;
+    border-right: 1px solid #2b3a4a;
 }
-
-.today-table td {
-    background-color: #e9ecef;
+.today-table thead th:last-child {
+    border-right: none;
+}
+.today-table tbody td {
+    background-color: #f0f0f0;
+    color: #333;
+    padding: 12px 5px;
     border: 1px solid #dee2e6;
-    border-radius: 6px;
     text-align: center;
-    padding: 12px 8px;
-    flex: 1 1 28%; /* মোবাইল ভিউতে ৩টি কলাম */
-    margin: 5px;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
 }
-
-@media (min-width: 600px) {
-    .today-table td {
-        flex: 1 1 12%; /* ডেস্কটপ ভিউতে বেশি কলাম */
-    }
-}
-
 .today-table .patty {
-    font-size: 1.2em;
+    font-size: 1.1em;
     font-weight: bold;
-    color: #555;
-    border-bottom: 1px solid #dee2e6;
-    padding-bottom: 5px;
-    margin-bottom: 5px;
 }
-
 .today-table .single {
     font-size: 2em;
     font-weight: bold;
-    color: #dc3545; /* লাল কালার */
+    color: #dc3545; /* লাল রং */
+    display: block;
 }
 
-/* পুরোনো রেজাল্টের জন্য ছোট টেবিল-সদৃশ ডিজাইন */
+/* পুরোনো রেজাল্টের ডিজাইন */
 .old-results-section {
     margin-top: 25px;
 }
@@ -100,20 +110,26 @@ header {
     border-collapse: collapse;
     margin-bottom: 15px;
 }
-
+.old-results-table caption {
+    background-color: #465a6e;
+    color: #fff;
+    font-weight: bold;
+    padding: 10px;
+    text-align: center;
+    border-top-left-radius: 8px;
+    border-top-right-radius: 8px;
+}
 .old-results-table th, .old-results-table td {
     border: 1px solid #dee2e6;
     text-align: center;
     padding: 8px 4px;
     font-size: 0.9em;
 }
-
 .old-results-table th {
     background-color: #f8f9fa;
     color: #495057;
     font-weight: bold;
 }
-
 .old-results-table td {
     background-color: #ffffff;
     color: #555;
