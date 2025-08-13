@@ -31,7 +31,6 @@ function checkAndArchiveResults() {
     archiveMetadataRef.child('last_archived_date').once('value').then((snapshot) => {
         const lastArchivedDate = snapshot.val();
 
-        // যদি আজকের তারিখের জন্য ডেটা আর্কাইভ করা না হয়ে থাকে
         if (lastArchivedDate !== todayDateStr) {
             const yesterdayResultsRef = database.ref('results/today/' + yesterdayDateStr);
             const oldResultsRef = database.ref('results/old/' + yesterdayDateStr);
@@ -50,14 +49,14 @@ function checkAndArchiveResults() {
     });
 }
 
-function displayResults(container, results) {
+function displayResults(container, results, isOld = false) {
     container.innerHTML = '';
     const resultsGrid = document.createElement('div');
-    resultsGrid.className = 'results-grid';
+    resultsGrid.className = isOld ? 'old-results-grid' : 'results-grid';
 
     for (let i = 1; i <= 8; i++) {
         const resultBox = document.createElement('div');
-        resultBox.className = 'result-box';
+        resultBox.className = isOld ? 'old-result-box' : 'result-box';
         const pattyNumber = results[i] ? results[i].patty : '---';
         const singleNumber = results[i] ? results[i].single : '---';
         
@@ -93,11 +92,11 @@ function loadResults() {
                 <div class="old-results-date">${date}</div>
             `;
             const resultsGrid = document.createElement('div');
-            resultsGrid.className = 'results-grid';
+            resultsGrid.className = 'old-results-grid';
 
             for (let i = 1; i <= 8; i++) {
                 const resultBox = document.createElement('div');
-                resultBox.className = 'result-box';
+                resultBox.className = 'old-result-box';
                 const pattyNumber = results[i] ? results[i].patty : '---';
                 const singleNumber = results[i] ? results[i].single : '---';
                 
