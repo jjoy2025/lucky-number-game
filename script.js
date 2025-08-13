@@ -17,6 +17,39 @@ const database = firebase.database();
 const todayResultsGrid = document.getElementById('today-results-grid');
 const oldResultsContainer = document.getElementById('old-results-container');
 
+// রেজাল্ট আর্কাইভ করার ফাংশন
+function checkAndArchiveResults() {
+    const now = new Date();
+    const yesterday = new Date(now);
+    yesterday.setDate(now.getDate() - 1);
+
+    const yesterdayDateStr = yesterday.toISOString().slice(0, 10);
+    const todayDateStr = now.toISOString().slice(0, 10);
+
+    const archiveMetadataRef = database.ref('archive_metadata');
+
+    archiveMetadataRef.child('last_archived_date').once('value').then((snapshot) => {
+        const lastArchivedDate = snapshot.val();
+
+        // যদি আজকের তারিখের জন্য ডেটা আর্কাইভ করা না হয়ে থাকে
+        if (lastArchivedDate !== todayDateStr) {
+            const yesterdayResultsRef = database.ref('results/today/' + yesterdayDateStr);
+            const oldResultsRef = database.ref('results/old/' + yesterdayDateStr);
+
+            yesterdayResultsRef.once('value').then((resultsSnapshot) => {
+                const results = resultsSnapshot.val();
+                if (results) {
+                    oldResultsRef.set(results).then(() => {
+                        console.log("আগের দিনের রেজাল্ট সফলভাবে আর্কাইভ করা হয়েছে।");
+                        yesterdayResultsRef.remove();
+                        archiveMetadataRef.child('last_archived_date').set(todayDateStr);
+                    });
+                }
+            });
+        }
+    });
+}
+
 function displayResults(container, results) {
     container.innerHTML = '';
     const resultsGrid = document.createElement('div');
@@ -77,6 +110,9 @@ function loadResults() {
         });
     });
 }
+
+// প্রতি মিনিটে আর্কাইভ করার ফাংশনটি কল করা হচ্ছে
+setInterval(checkAndArchiveResults, 60000);
 
 // প্রতি মিনিটে ডেটা রিফ্রেশ করুন
 setInterval(loadResults, 60000);
