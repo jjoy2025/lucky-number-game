@@ -21,7 +21,7 @@ const todayDateTitle = document.getElementById('today-date-title');
 // PWA সার্ভিস ওয়ার্কার রেজিস্টার করুন
 if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
-        navigator.serviceWorker.register('./service-worker.js') // পাথ পরিবর্তন করা হয়েছে
+        navigator.serviceWorker.register('./service-worker.js')
             .then(registration => {
                 console.log('ServiceWorker registration successful with scope: ', registration.scope);
             })
@@ -33,6 +33,7 @@ if ('serviceWorker' in navigator) {
 
 // রেজাল্ট আর্কাইভ করার ফাংশন
 function checkAndArchiveResults() {
+    console.log("Checking for archive...");
     const now = new Date();
     const yesterday = new Date(now);
     yesterday.setDate(now.getDate() - 1);
@@ -44,6 +45,7 @@ function checkAndArchiveResults() {
 
     archiveMetadataRef.child('last_archived_date').once('value').then((snapshot) => {
         const lastArchivedDate = snapshot.val();
+        console.log(`Last archived date: ${lastArchivedDate}, Today's date: ${todayDateStr}`);
 
         if (lastArchivedDate !== todayDateStr) {
             const yesterdayResultsRef = database.ref('results/today/' + yesterdayDateStr);
@@ -52,18 +54,30 @@ function checkAndArchiveResults() {
             yesterdayResultsRef.once('value').then((resultsSnapshot) => {
                 const results = resultsSnapshot.val();
                 if (results) {
-                    oldResultsRef.set(results).then(() => {
-                        console.log("আগের দিনের রেজাল্ট সফলভাবে আর্কাইভ করা হয়েছে।");
-                        yesterdayResultsRef.remove();
-                        archiveMetadataRef.child('last_archived_date').set(todayDateStr);
-                    });
+                    console.log(`Archiving results for ${yesterdayDateStr}...`);
+                    oldResultsRef.set(results)
+                        .then(() => {
+                            console.log("আগের দিনের রেজাল্ট সফলভাবে আর্কাইভ করা হয়েছে।");
+                            yesterdayResultsRef.remove();
+                            archiveMetadataRef.child('last_archived_date').set(todayDateStr);
+                        })
+                        .catch(error => {
+                            console.error("Archiving failed: ", error);
+                        });
+                } else {
+                    console.log(`No results found for ${yesterdayDateStr}, skipping archive.`);
+                    // যদি গতকালের কোনো রেজাল্ট না থাকে, তবুও আর্কাইভ মেটাডেটা আপডেট করা হচ্ছে
+                    archiveMetadataRef.child('last_archived_date').set(todayDateStr);
                 }
             });
         }
+    }).catch(error => {
+        console.error("Error checking archive metadata: ", error);
     });
 }
 
 function loadResults() {
+    console.log("Loading results...");
     // আজকের রেজাল্ট লোড
     const today = new Date();
     const todayDateStr = today.toISOString().slice(0, 10);
@@ -73,7 +87,7 @@ function loadResults() {
     todayRef.on('value', (snapshot) => {
         const results = snapshot.val() || {};
         todayResultsContainer.innerHTML = '';
-
+        
         const todayTable = document.createElement('table');
         todayTable.className = 'today-table';
 
