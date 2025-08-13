@@ -15,6 +15,8 @@ firebase.initializeApp(firebaseConfig);
 const auth = firebase.auth();
 const database = firebase.database();
 
+const adminUID = "dfAI8a7DfMRxgeymYJlGwuruxz63"; // আপনার দেওয়া ইউআইডি
+
 const loginSection = document.getElementById('login-section');
 const resultFormsContainer = document.getElementById('result-forms-container');
 const authForm = document.getElementById('auth-form');
@@ -24,7 +26,7 @@ const resultFormsDiv = document.getElementById('result-forms');
 
 // Firebase Authentication অবস্থা নিরীক্ষণ করুন
 auth.onAuthStateChanged((user) => {
-    if (user) {
+    if (user && user.uid === adminUID) {
         loginSection.style.display = 'none';
         resultFormsContainer.style.display = 'block';
         loadResultForms();
@@ -42,7 +44,10 @@ authForm.addEventListener('submit', (e) => {
 
     auth.signInWithEmailAndPassword(email, password)
         .then((userCredential) => {
-            // সাইন ইন সফল
+            if (userCredential.user.uid !== adminUID) {
+                auth.signOut();
+                errorMessage.textContent = "আপনার এই অ্যাকাউন্টটি এডমিন নয়।";
+            }
         })
         .catch((error) => {
             errorMessage.textContent = error.message;
