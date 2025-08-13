@@ -21,7 +21,7 @@ const todayDateTitle = document.getElementById('today-date-title');
 // PWA সার্ভিস ওয়ার্কার রেজিস্টার করুন
 if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
-        navigator.serviceWorker.register('/service-worker.js')
+        navigator.serviceWorker.register('./service-worker.js') // পাথ পরিবর্তন করা হয়েছে
             .then(registration => {
                 console.log('ServiceWorker registration successful with scope: ', registration.scope);
             })
