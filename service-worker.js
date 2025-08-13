@@ -1,4 +1,4 @@
-const CACHE_NAME = 'lucky-number-cache-v2'; // ক্যাশের নাম পরিবর্তন করা হয়েছে
+const CACHE_NAME = 'lucky-number-cache-v4'; // ক্যাশের নাম v4 করা হয়েছে
 const urlsToCache = [
   './',
   './index.html',
@@ -10,7 +10,7 @@ const urlsToCache = [
 ];
 
 self.addEventListener('install', event => {
-  self.skipWaiting(); // নতুন সার্ভিস ওয়ার্কার দ্রুত সক্রিয় করার জন্য
+  self.skipWaiting();
   event.waitUntil(
     caches.open(CACHE_NAME)
       .then(cache => {
@@ -26,7 +26,7 @@ self.addEventListener('activate', event => {
       return Promise.all(
         cacheNames.map(cacheName => {
           if (cacheWhitelist.indexOf(cacheName) === -1) {
-            return caches.delete(cacheName); // পুরানো ক্যাশ মুছে ফেলা
+            return caches.delete(cacheName);
           }
         })
       );
