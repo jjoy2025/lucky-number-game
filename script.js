@@ -16,6 +16,7 @@ const database = firebase.database();
 
 const todayResultsContainer = document.getElementById('today-results-container');
 const oldResultsContainer = document.getElementById('old-results-container');
+const todayDateTitle = document.getElementById('today-date-title');
 
 // রেজাল্ট আর্কাইভ করার ফাংশন
 function checkAndArchiveResults() {
@@ -51,8 +52,10 @@ function checkAndArchiveResults() {
 
 function loadResults() {
     // আজকের রেজাল্ট লোড
-    const today = new Date().toISOString().slice(0, 10);
-    const todayRef = database.ref('results/today/' + today);
+    const today = new Date();
+    const todayDateStr = today.toISOString().slice(0, 10);
+    todayDateTitle.textContent = todayDateStr; // তারিখ আপডেট করা হচ্ছে
+    const todayRef = database.ref('results/today/' + todayDateStr);
 
     todayRef.on('value', (snapshot) => {
         const results = snapshot.val() || {};
@@ -60,27 +63,39 @@ function loadResults() {
 
         const todayTable = document.createElement('table');
         todayTable.className = 'today-table';
-        const todayRow1 = document.createElement('tr');
-        const todayRow2 = document.createElement('tr');
-        const todayRow3 = document.createElement('tr');
+
+        const tableHead = document.createElement('thead');
+        const headerRow = document.createElement('tr');
+        for (let i = 1; i <= 8; i++) {
+            const th = document.createElement('th');
+            th.textContent = i;
+            headerRow.appendChild(th);
+        }
+        tableHead.appendChild(headerRow);
+        todayTable.appendChild(tableHead);
+
+        const tableBody = document.createElement('tbody');
+        const pattyRow = document.createElement('tr');
+        const singleRow = document.createElement('tr');
 
         for (let i = 1; i <= 8; i++) {
-            const resultBox = document.createElement('td');
+            const pattyCell = document.createElement('td');
+            const singleCell = document.createElement('td');
+            
             const pattyNumber = results[i] ? results[i].patty : '---';
             const singleNumber = results[i] ? results[i].single : '---';
             
-            resultBox.innerHTML = `<div class="patty">${pattyNumber}</div>
-                                   <div class="single">${singleNumber}</div>`;
-            
-            if (i <= 3) todayRow1.appendChild(resultBox);
-            else if (i <= 6) todayRow2.appendChild(resultBox);
-            else todayRow3.appendChild(resultBox);
+            pattyCell.innerHTML = `<span class="patty">${pattyNumber}</span>`;
+            singleCell.innerHTML = `<span class="single">${singleNumber}</span>`;
+
+            pattyRow.appendChild(pattyCell);
+            singleRow.appendChild(singleCell);
         }
 
-        todayTable.appendChild(todayRow1);
-        if (todayRow2.hasChildNodes()) todayTable.appendChild(todayRow2);
-        if (todayRow3.hasChildNodes()) todayTable.appendChild(todayRow3);
-
+        tableBody.appendChild(pattyRow);
+        tableBody.appendChild(singleRow);
+        todayTable.appendChild(tableBody);
+        
         todayResultsContainer.appendChild(todayTable);
     });
 
