@@ -18,6 +18,19 @@ const todayResultsContainer = document.getElementById('today-results-container')
 const oldResultsContainer = document.getElementById('old-results-container');
 const todayDateTitle = document.getElementById('today-date-title');
 
+// PWA সার্ভিস ওয়ার্কার রেজিস্টার করুন
+if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+        navigator.serviceWorker.register('/service-worker.js')
+            .then(registration => {
+                console.log('ServiceWorker registration successful with scope: ', registration.scope);
+            })
+            .catch(err => {
+                console.log('ServiceWorker registration failed: ', err);
+            });
+    });
+}
+
 // রেজাল্ট আর্কাইভ করার ফাংশন
 function checkAndArchiveResults() {
     const now = new Date();
@@ -54,7 +67,7 @@ function loadResults() {
     // আজকের রেজাল্ট লোড
     const today = new Date();
     const todayDateStr = today.toISOString().slice(0, 10);
-    todayDateTitle.textContent = todayDateStr; // তারিখ আপডেট করা হচ্ছে
+    todayDateTitle.textContent = todayDateStr;
     const todayRef = database.ref('results/today/' + todayDateStr);
 
     todayRef.on('value', (snapshot) => {
