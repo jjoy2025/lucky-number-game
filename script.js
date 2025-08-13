@@ -14,7 +14,7 @@ const firebaseConfig = {
 firebase.initializeApp(firebaseConfig);
 const database = firebase.database();
 
-const todayResultsGrid = document.getElementById('today-results-grid');
+const todayResultsContainer = document.getElementById('today-results-container');
 const oldResultsContainer = document.getElementById('old-results-container');
 
 // রেজাল্ট আর্কাইভ করার ফাংশন
@@ -49,24 +49,6 @@ function checkAndArchiveResults() {
     });
 }
 
-function displayResults(container, results, isOld = false) {
-    container.innerHTML = '';
-    const resultsGrid = document.createElement('div');
-    resultsGrid.className = isOld ? 'old-results-grid' : 'results-grid';
-
-    for (let i = 1; i <= 8; i++) {
-        const resultBox = document.createElement('div');
-        resultBox.className = isOld ? 'old-result-box' : 'result-box';
-        const pattyNumber = results[i] ? results[i].patty : '---';
-        const singleNumber = results[i] ? results[i].single : '---';
-        
-        resultBox.innerHTML = `<div class="patty">${pattyNumber}</div>
-                               <div class="single">${singleNumber}</div>`;
-        resultsGrid.appendChild(resultBox);
-    }
-    container.appendChild(resultsGrid);
-}
-
 function loadResults() {
     // আজকের রেজাল্ট লোড
     const today = new Date().toISOString().slice(0, 10);
@@ -74,9 +56,32 @@ function loadResults() {
 
     todayRef.on('value', (snapshot) => {
         const results = snapshot.val() || {};
-        const emptyResults = { 1: null, 2: null, 3: null, 4: null, 5: null, 6: null, 7: null, 8: null };
-        todayResultsGrid.innerHTML = '';
-        displayResults(todayResultsGrid, { ...emptyResults, ...results });
+        todayResultsContainer.innerHTML = '';
+
+        const todayTable = document.createElement('table');
+        todayTable.className = 'today-table';
+        const todayRow1 = document.createElement('tr');
+        const todayRow2 = document.createElement('tr');
+        const todayRow3 = document.createElement('tr');
+
+        for (let i = 1; i <= 8; i++) {
+            const resultBox = document.createElement('td');
+            const pattyNumber = results[i] ? results[i].patty : '---';
+            const singleNumber = results[i] ? results[i].single : '---';
+            
+            resultBox.innerHTML = `<div class="patty">${pattyNumber}</div>
+                                   <div class="single">${singleNumber}</div>`;
+            
+            if (i <= 3) todayRow1.appendChild(resultBox);
+            else if (i <= 6) todayRow2.appendChild(resultBox);
+            else todayRow3.appendChild(resultBox);
+        }
+
+        todayTable.appendChild(todayRow1);
+        if (todayRow2.hasChildNodes()) todayTable.appendChild(todayRow2);
+        if (todayRow3.hasChildNodes()) todayTable.appendChild(todayRow3);
+
+        todayResultsContainer.appendChild(todayTable);
     });
 
     // পুরোনো রেজাল্ট লোড
@@ -86,26 +91,32 @@ function loadResults() {
         snapshot.forEach((childSnapshot) => {
             const date = childSnapshot.key;
             const results = childSnapshot.val();
-            const dateSection = document.createElement('div');
-            dateSection.className = 'results-section';
-            dateSection.innerHTML = `
-                <div class="old-results-date">${date}</div>
-            `;
-            const resultsGrid = document.createElement('div');
-            resultsGrid.className = 'old-results-grid';
 
+            const oldTable = document.createElement('table');
+            oldTable.className = 'old-results-table';
+            oldTable.innerHTML = `<caption><div class="old-results-date">${date}</div></caption>`;
+
+            const headerRow = document.createElement('tr');
             for (let i = 1; i <= 8; i++) {
-                const resultBox = document.createElement('div');
-                resultBox.className = 'old-result-box';
+                const th = document.createElement('th');
+                th.textContent = i;
+                headerRow.appendChild(th);
+            }
+            oldTable.appendChild(headerRow);
+
+            const resultRow = document.createElement('tr');
+            for (let i = 1; i <= 8; i++) {
+                const td = document.createElement('td');
                 const pattyNumber = results[i] ? results[i].patty : '---';
                 const singleNumber = results[i] ? results[i].single : '---';
                 
-                resultBox.innerHTML = `<div class="patty">${pattyNumber}</div>
-                                       <div class="single">${singleNumber}</div>`;
-                resultsGrid.appendChild(resultBox);
+                td.innerHTML = `<span class="patty">${pattyNumber}</span>
+                                <span class="single">${singleNumber}</span>`;
+                resultRow.appendChild(td);
             }
-            dateSection.appendChild(resultsGrid);
-            oldResultsContainer.prepend(dateSection);
+            oldTable.appendChild(resultRow);
+            
+            oldResultsContainer.prepend(oldTable);
         });
     });
 }
