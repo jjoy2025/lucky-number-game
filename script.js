@@ -31,53 +31,9 @@ if ('serviceWorker' in navigator) {
     });
 }
 
-// রেজাল্ট আর্কাইভ করার ফাংশন
-function checkAndArchiveResults() {
-    console.log("Checking for archive...");
-    const now = new Date();
-    const yesterday = new Date(now);
-    yesterday.setDate(now.getDate() - 1);
-
-    const yesterdayDateStr = yesterday.toISOString().slice(0, 10);
-    const todayDateStr = now.toISOString().slice(0, 10);
-
-    const archiveMetadataRef = database.ref('archive_metadata');
-
-    archiveMetadataRef.child('last_archived_date').once('value').then((snapshot) => {
-        const lastArchivedDate = snapshot.val();
-        console.log(`Last archived date: ${lastArchivedDate}, Today's date: ${todayDateStr}`);
-
-        if (lastArchivedDate !== todayDateStr) {
-            const yesterdayResultsRef = database.ref('results/today/' + yesterdayDateStr);
-            const oldResultsRef = database.ref('results/old/' + yesterdayDateStr);
-
-            yesterdayResultsRef.once('value').then((resultsSnapshot) => {
-                const results = resultsSnapshot.val();
-                if (results) {
-                    console.log(`Archiving results for ${yesterdayDateStr}...`);
-                    oldResultsRef.set(results)
-                        .then(() => {
-                            console.log("আগের দিনের রেজাল্ট সফলভাবে আর্কাইভ করা হয়েছে।");
-                            yesterdayResultsRef.remove();
-                            archiveMetadataRef.child('last_archived_date').set(todayDateStr);
-                        })
-                        .catch(error => {
-                            console.error("Archiving failed: ", error);
-                        });
-                } else {
-                    console.log(`No results found for ${yesterdayDateStr}, skipping archive.`);
-                    // যদি গতকালের কোনো রেজাল্ট না থাকে, তবুও আর্কাইভ মেটাডেটা আপডেট করা হচ্ছে
-                    archiveMetadataRef.child('last_archived_date').set(todayDateStr);
-                }
-            });
-        }
-    }).catch(error => {
-        console.error("Error checking archive metadata: ", error);
-    });
-}
-
 function loadResults() {
     console.log("Loading results...");
+    
     // আজকের রেজাল্ট লোড
     const today = new Date();
     const todayDateStr = today.toISOString().slice(0, 10);
@@ -162,9 +118,6 @@ function loadResults() {
         });
     });
 }
-
-// প্রতি মিনিটে আর্কাইভ করার ফাংশনটি কল করা হচ্ছে
-setInterval(checkAndArchiveResults, 60000);
 
 // প্রতি মিনিটে ডেটা রিফ্রেশ করুন
 setInterval(loadResults, 60000);
