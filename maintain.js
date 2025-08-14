@@ -13,7 +13,7 @@ const firebaseConfig = {
 firebase.initializeApp(firebaseConfig);
 const database = firebase.database();
 
-const adminPassword = "your_strong_password"; // এখানে আপনার পছন্দের একটি পাসওয়ার্ড দিন
+const adminPassword = "Probirgsm@10"; // এখানে আপনার পছন্দের একটি পাসওয়ার্ড দিন
 
 const loginSection = document.getElementById('login-section');
 const maintenanceSection = document.getElementById('maintenance-section');
