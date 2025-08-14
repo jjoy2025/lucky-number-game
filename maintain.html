@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Maintenance Panel</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        .admin-container {
+            max-width: 600px;
+            margin: 50px auto;
+            padding: 20px;
+            background-color: #2b3a4a;
+            border-radius: 8px;
+            color: #f0f0f0;
+            text-align: center;
+        }
+        .admin-container h1 {
+            color: #ffcc00;
+            margin-bottom: 20px;
+        }
+        .login-section, .maintenance-section {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            align-items: center;
+        }
+        .login-section input {
+            width: 80%;
+            padding: 10px;
+            border: 1px solid #444;
+            background-color: #334455;
+            color: #f0f0f0;
+            border-radius: 5px;
+        }
+        .login-section button, .maintenance-section button {
+            padding: 12px 24px;
+            border: none;
+            background-color: #ffcc00;
+            color: #2b3a4a;
+            font-size: 16px;
+            font-weight: bold;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+        .login-section button:hover, .maintenance-section button:hover {
+            background-color: #e6b800;
+        }
+        #maintenance-section {
+            display: none;
+        }
+    </style>
+    <script src="https://www.gstatic.com/firebasejs/8.6.8/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.6.8/firebase-database.js"></script>
+</head>
+<body>
+    <div class="admin-container">
+        <h1>Maintenance Panel</h1>
+        
+        <div id="login-section" class="login-section">
+            <input type="password" id="admin-password" placeholder="Enter password">
+            <button id="login-button">Login</button>
+        </div>
+
+        <div id="maintenance-section" class="maintenance-section">
+            <p id="status-message">Ready to archive results.</p>
+            <button id="run-maintenance-button">Run Daily Maintenance</button>
+        </div>
+    </div>
+    <script src="maintain.js"></script>
+</body>
+</html>
