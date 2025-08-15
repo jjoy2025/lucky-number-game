@@ -1,83 +1,14 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>The Lucky Number - Today's & Old Results</title>
-    <link rel="stylesheet" href="style.css">
-    
-    <link rel="manifest" href="/manifest.json">
-    <link rel="apple-touch-icon" href="/favicon.png">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="Lucky Number">
-
-    <script src="https://www.gstatic.com/firebasejs/8.6.8/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.6.8/firebase-database.js"></script>
-</head>
-<body>
-    <div class="container">
-        <header>
-            <h1 class="logo">The Lucky Number</h1>
-        </header>
-
-        <div class="ad-container">
-            <script type='text/javascript' src='//pl27409836.profitableratecpm.com/9d/63/9e/9d639ef12283230a1ff5b029ac229ac3.js'></script>
-        </div>
-
-        <div class="ad-container">
-            <script type="text/javascript">
-                atOptions = {
-                    'key' : 'cfc3736362e2e96710af64f7951b389e',
-                    'format' : 'iframe',
-                    'height' : 50,
-                    'width' : 320,
-                    'params' : {}
-                };
-            </script>
-            <script type="text/javascript" src="//www.highperformanceformat.com/cfc3736362e2e96710af64f7951b389e/invoke.js"></script>
-        </div>
-
-        <div class="live-refresh-section">
-            <span class="live-dot"></span>
-            <span class="live-text">Live Refresh now</span>
-        </div>
-
-        <section class="results-section today-section">
-            <h2 id="today-date-title" class="section-title"></h2>
-            <div id="today-results-container">
-                </div>
-        </section>
-
-        <div class="ad-container">
-            <script type='text/javascript' src='//pl27409815.profitableratecpm.com/3d/be/e9/3dbee9d1b69d8d218b0f89caf0eb4bcc.js'></script>
-        </div>
-
-        <section class="results-section old-results-section">
-            <h2 class="section-title">Old Result</h2>
-            <div id="old-results-container">
-                </div>
-        </section>
-
-        <div class="ad-container">
-            <script type="text/javascript">
-                atOptions = {
-                    'key' : '887d30883a1b916247d85362406dde44',
-                    'format' : 'iframe',
-                    'height' : 60,
-                    'width' : 468,
-                    'params' : {}
-                };
-            </script>
-            <script type="text/javascript" src="//www.highperformanceformat.com/887d30883a1b916247d85362406dde44/invoke.js"></script>
-        </div>
-
-        <div class="ad-container">
-            <script async="async" data-cfasync="false" src="//pl27409824.profitableratecpm.com/2abf462e9b384caab0c8d2f4ce7b9df6/invoke.js"></script>
-            <div id="container-2abf462e9b384caab0c8d2f4ce7b9df6"></div>
-        </div>
-    </div>
-
-    <script src="script.js"></script>
-</body>
-</html>
+    <script>
+        // PWA সার্ভিস ওয়ার্কার রেজিস্টার করুন
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('./service-worker.js')
+                    .then(registration => {
+                        console.log('ServiceWorker registration successful with scope: ', registration.scope);
+                    })
+                    .catch(err => {
+                        console.log('ServiceWorker registration failed: ', err);
+                    });
+            });
+        }
+    </script>
